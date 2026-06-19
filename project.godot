@@ -13,11 +13,35 @@ config_version=5
 config/name="Domucki"
 config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
+run/main_scene="res://levels/test/test_arena.tscn"
+
+[autoload]
+
+GameManager="*res://src/systems/game_manager.gd"
+EventBus="*res://src/systems/event_bus.gd"
+SaveManager="*res://src/systems/save_manager.gd"
+AudioManager="*res://src/systems/audio_manager.gd"
+SceneManager="*res://src/systems/scene_manager.gd"
 
 [display]
 
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[layer_names]
+
+3d_physics/layer_1="World"
+3d_physics/layer_2="Player"
+3d_physics/layer_3="Enemy"
+3d_physics/layer_4="NPC"
+3d_physics/layer_5="PlayerHitbox"
+3d_physics/layer_6="EnemyHitbox"
+3d_physics/layer_7="PlayerHurtbox"
+3d_physics/layer_8="EnemyHurtbox"
+3d_physics/layer_9="Interactable"
+3d_physics/layer_10="Projectile"
+3d_physics/layer_11="NavObstacle"
+3d_physics/layer_12="Trigger"
 
 [physics]
 
