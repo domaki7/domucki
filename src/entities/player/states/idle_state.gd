@@ -2,7 +2,7 @@ class_name PlayerIdleState
 extends PlayerState
 
 func enter() -> void:
-	animation.play(&"Idle")
+	animation.play(&"Idle", 0.2, true)
 
 func physics_process_state(delta: float) -> void:
 	movement.apply_gravity(delta)

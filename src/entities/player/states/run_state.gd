@@ -2,7 +2,7 @@ class_name PlayerRunState
 extends PlayerState
 
 func enter() -> void:
-	animation.play(&"Running_A")
+	animation.play(&"Running_A", 0.2, true)
 
 func physics_process_state(delta: float) -> void:
 	movement.apply_gravity(delta)

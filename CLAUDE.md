@@ -112,7 +112,7 @@ EventBus.entity_died.connect(_on_entity_died)
 
 - **HealthComponent** (`src/components/health_component.gd`) -- HP tracking, `take_damage()`, `heal()`. Signals: `died`, `health_changed`, `damage_taken`, `healed`. Emits `EventBus.entity_died` on death.
 - **MovementComponent** (`src/components/movement_component.gd`) -- Movement, gravity, rotation for CharacterBody3D. Finds its body via `get_parent()`. Call `apply_movement(direction, delta)`, `apply_gravity(delta)`, `apply_friction(delta)`, `move()`. Does NOT read input -- receives direction from caller.
-- **AnimationComponent** (`src/components/animation_component.gd`) -- AnimationPlayer wrapper. Auto-discovers AnimationPlayer by searching sibling nodes. Call `play(animation_name)`. Emits `animation_finished`.
+- **AnimationComponent** (`src/components/animation_component.gd`) -- AnimationPlayer wrapper. Auto-discovers AnimationPlayer by searching sibling nodes. Call `play(animation_name, crossfade, loop)`. Pass `loop = true` for animations that should repeat (Idle, Running); omit or pass `false` for one-shot animations (attacks). Emits `animation_finished` only for non-looping animations.
 
 ## State Machine Pattern
 
