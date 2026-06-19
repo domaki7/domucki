@@ -12,7 +12,7 @@ Component-based entity composition. Entities (player, enemies, NPCs) are Charact
 2. **Components are reusable nodes.** Each component is a .tscn with a root script. Instance it as a child of any entity that needs that behavior. Do not put component logic in the entity script.
 3. **Entity scripts are thin.** The entity .gd file wires components together and handles entity-specific input or orchestration. It should not contain health logic, movement math, or inventory management -- those belong in components.
 4. **Static typing everywhere.** Every variable, parameter, and return type must have an explicit type annotation. Use `-> void` on all functions that return nothing.
-5. **No magic strings for node paths.** Use `@export` node references to connect components. Never `get_node("../HealthComponent")`.
+5. **No magic strings for node paths.** Entity scripts wire component references via `$NodeName` in `_ready()`. Components find their owner entity via `get_parent()`. Never use string-based `get_node("../SomeComponent")` with relative paths.
 6. **Signals for events, methods for commands.** Components emit signals when something happens (died, health_changed). Other nodes call methods to make things happen (take_damage, heal).
 
 ## Directory Structure
@@ -33,7 +33,8 @@ res://
     loot_tables/        LootTable resources
   levels/               Level/world scenes
   assets/               Raw assets only (models/, textures/, audio/, materials/, fonts/, shaders/)
-  addons/               Third-party editor plugins
+  addons/               Third-party editor plugins and asset packs
+    kaykit_character_pack_adventures/  KayKit Adventurers (CC0) -- characters, weapons, textures
 ```
 
 ## Naming Conventions
@@ -84,9 +85,12 @@ func do_thing() -> void:
 
 **Direct references (required dependencies):**
 ```gdscript
-@export var health_component: HealthComponent
+# Entity script wires in _ready():
+health_component = $HealthComponent as HealthComponent
+# Component finds its body in _ready():
+body = get_parent() as CharacterBody3D
 ```
-Set in the inspector by dragging the node. Use when one component must call methods on another.
+Entity scripts use `$NodeName` to get component references. Components use `get_parent()` to find their owning entity.
 
 **Local signals (same-entity events):**
 ```gdscript
@@ -104,6 +108,12 @@ EventBus.entity_died.connect(_on_entity_died)
 
 **Rule:** @export reference for "I need to call your methods." Signal for "I'm announcing something happened." EventBus for "Systems that don't know about me need to react."
 
+### Existing Components
+
+- **HealthComponent** (`src/components/health_component.gd`) -- HP tracking, `take_damage()`, `heal()`. Signals: `died`, `health_changed`, `damage_taken`, `healed`. Emits `EventBus.entity_died` on death.
+- **MovementComponent** (`src/components/movement_component.gd`) -- Movement, gravity, rotation for CharacterBody3D. Finds its body via `get_parent()`. Call `apply_movement(direction, delta)`, `apply_gravity(delta)`, `apply_friction(delta)`, `move()`. Does NOT read input -- receives direction from caller.
+- **AnimationComponent** (`src/components/animation_component.gd`) -- AnimationPlayer wrapper. Auto-discovers AnimationPlayer by searching sibling nodes. Call `play(animation_name)`. Emits `animation_finished`.
+
 ## State Machine Pattern
 
 States are Node children of a StateMachineComponent. Each state extends the base State class.
@@ -114,6 +124,62 @@ States are Node children of a StateMachineComponent. Each state extends the base
 2. Create concrete states in `src/entities/<entity>/states/`.
 3. Each state calls `transition_requested.emit(self, &"TargetStateName")` to request transitions.
 4. State node names in the scene tree must match the StringName used in transitions: node `IdleState` -> `&"IdleState"`.
+
+### State Machine Initialization
+
+Do NOT use `initial_state` export on StateMachine for entities that need component references. Instead, the entity script starts the state machine via `call_deferred` after wiring all references in `_ready()`:
+```gdscript
+func _ready() -> void:
+    state_machine = $StateMachine as StateMachine
+    movement_component = $MovementComponent as MovementComponent
+    # ... wire other references ...
+    _start_state_machine.call_deferred()
+
+func _start_state_machine() -> void:
+    state_machine.transition_to(&"IdleState")
+```
+Entity-specific base states (e.g., `PlayerState`) use `await owner.ready` in `_ready()` to get references after the entity has wired them. The deferred start ensures all `_ready()` and await continuations complete before `enter()` is called.
+
+## Player Entity
+
+Player scene tree (`src/entities/player/player.tscn`):
+```
+Player (CharacterBody3D)         player.gd, layer 2, mask 1
+  CollisionShape3D               CapsuleShape3D
+  KnightModel                    KayKit Knight.glb instance
+  CameraArm                      camera_arm.gd, third-person orbit camera
+    SpringArm3D                  wall collision, length 4.0
+      Camera3D
+  StateMachine                   state_machine.gd
+    IdleState                    idle_state.gd
+    RunState                     run_state.gd
+    AttackState                  attack_state.gd
+  MovementComponent              movement_component.gd
+  HealthComponent                health_component.gd
+  AnimationComponent             animation_component.gd
+```
+
+### Player States
+
+All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which provides `player`, `movement`, `animation` refs and `get_input_direction() -> Vector3` (camera-relative WASD).
+
+- **IdleState** -- plays `Idle`, transitions to RunState on movement input, AttackState on LMB
+- **RunState** -- plays `Running_A`, applies camera-relative movement + rotation, transitions to IdleState when stopped
+- **AttackState** -- plays `1H_Melee_Attack_Slice_Diagonal`, applies friction (no movement input), transitions out on animation_finished
+
+### Input Actions
+
+| Action | Key | Used by |
+|--------|-----|---------|
+| `move_forward` | W | PlayerState.get_input_direction() |
+| `move_backward` | S | PlayerState.get_input_direction() |
+| `move_left` | A | PlayerState.get_input_direction() |
+| `move_right` | D | PlayerState.get_input_direction() |
+| `attack` | LMB | IdleState, RunState |
+
+### KayKit Adventurers Asset Pack
+
+CC0 licensed characters in `addons/kaykit_character_pack_adventures/`. Characters: Knight, Barbarian, Mage, Rogue, Rogue_Hooded. Each .glb has 70+ animations including Idle, Walking_A/B/C, Running_A/B, attack variants (1H/2H/Dualwield), Death_A/B, Dodge, Block, Spellcast, Jump, and more. Weapons and accessories in `Assets/gltf/`.
 
 ## GDScript Style
 
@@ -132,15 +198,11 @@ const MAX_VALUE: int = 100
 @export_group("Combat")
 @export var damage: float = 10.0
 @export var attack_range: float = 2.0
-@export_group("References")
-@export var health_component: HealthComponent
-
-@onready var _animation_player: AnimationPlayer = $AnimationPlayer
-
+var health_component: HealthComponent
 var _internal_state: int = 0
 
 func _ready() -> void:
-    pass
+    health_component = $HealthComponent as HealthComponent
 
 func _physics_process(delta: float) -> void:
     pass
@@ -192,9 +254,9 @@ func calculate(base: float, modifier: float) -> float:
 @export var damage: float = 10.0
 @export var attack_cooldown: float = 0.5
 
-@export_group("References")
-@export var health_component: HealthComponent
 ```
+
+Component references are wired via `$NodeName` in `_ready()`, not `@export`.
 
 ## Physics Collision Layers
 
@@ -226,10 +288,11 @@ func calculate(base: float, modifier: float) -> float:
 ### Adding a New Enemy
 1. Create subfolder in `src/entities/enemies/<enemy_name>/`
 2. Create scene (.tscn) with CharacterBody3D root + CollisionShape3D
-3. Instance components from `src/components/` as children
-4. Wire @export references in inspector
+3. Add component nodes as children (HealthComponent, MovementComponent, AnimationComponent, etc.)
+4. Wire references via `$NodeName` in the entity script's `_ready()`
 5. Create `states/` subfolder with AI states
-6. Assign loot table .tres and set collision layers
+6. Start state machine via `call_deferred` in `_ready()`
+7. Assign loot table .tres and set collision layers
 
 ### Creating a New Item
 1. If new category needed, create Resource script in `resources/items/` extending ItemData

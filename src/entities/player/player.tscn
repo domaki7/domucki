@@ -1,0 +1,60 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb" id="2_knight"]
+[ext_resource type="Script" path="res://src/entities/player/camera_arm.gd" id="3_camera"]
+[ext_resource type="Script" path="res://src/states/state_machine.gd" id="4_statemachine"]
+[ext_resource type="Script" path="res://src/entities/player/states/idle_state.gd" id="5_idle"]
+[ext_resource type="Script" path="res://src/entities/player/states/run_state.gd" id="6_run"]
+[ext_resource type="Script" path="res://src/entities/player/states/attack_state.gd" id="7_attack"]
+[ext_resource type="Script" path="res://src/components/movement_component.gd" id="8_movement"]
+[ext_resource type="Script" path="res://src/components/health_component.gd" id="9_health"]
+[ext_resource type="Script" path="res://src/components/animation_component.gd" id="10_animation"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.3
+height = 1.0
+
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="KnightModel" parent="." instance=ExtResource("2_knight")]
+
+[node name="CameraArm" type="Node3D" parent="."]
+script = ExtResource("3_camera")
+
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraArm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+collision_mask = 1
+spring_length = 4.0
+
+[node name="Camera3D" type="Camera3D" parent="CameraArm/SpringArm3D"]
+current = true
+fov = 60.0
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("4_statemachine")
+
+[node name="IdleState" type="Node" parent="StateMachine"]
+script = ExtResource("5_idle")
+
+[node name="RunState" type="Node" parent="StateMachine"]
+script = ExtResource("6_run")
+
+[node name="AttackState" type="Node" parent="StateMachine"]
+script = ExtResource("7_attack")
+
+[node name="MovementComponent" type="Node" parent="."]
+script = ExtResource("8_movement")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("9_health")
+
+[node name="AnimationComponent" type="Node" parent="."]
+script = ExtResource("10_animation")
