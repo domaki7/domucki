@@ -2,6 +2,10 @@
 
 3D third-person action RPG built in Godot 4.7 with GDScript. Uses Jolt Physics, Forward Plus rendering, D3D12.
 
+## Tooling
+
+Use PowerShell for any file inspection tasks (reading 3D files, binary files, etc.). Never use Python.
+
 ## Architecture
 
 Component-based entity composition. Entities (player, enemies, NPCs) are CharacterBody3D scenes that compose reusable Component nodes as children. Components are standalone -- they carry their own logic and expose @export vars for designer tuning.

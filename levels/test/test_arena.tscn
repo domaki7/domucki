@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://c0test_arena"]
+[gd_scene load_steps=9 format=3 uid="uid://c0test_arena"]
 
 [ext_resource type="PackedScene" path="res://src/entities/player/player.tscn" id="1_player"]
 
@@ -16,6 +16,30 @@ background_mode = 2
 sky = SubResource("Sky_main")
 tonemap_mode = 2
 ssao_enabled = true
+
+[sub_resource type="Shader" id="Shader_grid"]
+code = "shader_type spatial;
+
+uniform vec4 line_color : source_color = vec4(0.3, 0.3, 0.3, 1.0);
+uniform vec4 bg_color : source_color = vec4(0.45, 0.45, 0.45, 1.0);
+uniform float grid_scale = 50.0;
+uniform float line_width = 0.03;
+
+void fragment() {
+	vec2 grid_uv = fract(UV * grid_scale);
+	float line = step(grid_uv.x, line_width) + step(1.0 - line_width, grid_uv.x)
+	           + step(grid_uv.y, line_width) + step(1.0 - line_width, grid_uv.y);
+	line = clamp(line, 0.0, 1.0);
+	ALBEDO = mix(bg_color.rgb, line_color.rgb, line);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_grid"]
+shader = SubResource("Shader_grid")
+shader_parameter/line_color = Color(0.3, 0.3, 0.3, 1)
+shader_parameter/bg_color = Color(0.45, 0.45, 0.45, 1)
+shader_parameter/grid_scale = 50.0
+shader_parameter/line_width = 0.03
 
 [sub_resource type="BoxMesh" id="BoxMesh_ground"]
 size = Vector3(50, 0.2, 50)
@@ -37,6 +61,7 @@ collision_layer = 1
 collision_mask = 0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+material_override = SubResource("ShaderMaterial_grid")
 mesh = SubResource("BoxMesh_ground")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
