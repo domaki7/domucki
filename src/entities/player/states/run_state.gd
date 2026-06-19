@@ -21,3 +21,7 @@ func physics_process_state(delta: float) -> void:
 
 	if Input.is_action_just_pressed(&"attack"):
 		transition_requested.emit(self, &"AttackState")
+		return
+
+	if Input.is_action_just_pressed(&"defend"):
+		transition_requested.emit(self, &"DefendState")

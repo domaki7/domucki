@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb" id="2_knight"]
@@ -7,9 +7,10 @@
 [ext_resource type="Script" path="res://src/entities/player/states/idle_state.gd" id="5_idle"]
 [ext_resource type="Script" path="res://src/entities/player/states/run_state.gd" id="6_run"]
 [ext_resource type="Script" path="res://src/entities/player/states/attack_state.gd" id="7_attack"]
-[ext_resource type="Script" path="res://src/components/movement_component.gd" id="8_movement"]
-[ext_resource type="Script" path="res://src/components/health_component.gd" id="9_health"]
-[ext_resource type="Script" path="res://src/components/animation_component.gd" id="10_animation"]
+[ext_resource type="Script" path="res://src/entities/player/states/defend_state.gd" id="8_defend"]
+[ext_resource type="Script" path="res://src/components/movement_component.gd" id="9_movement"]
+[ext_resource type="Script" path="res://src/components/health_component.gd" id="10_health"]
+[ext_resource type="Script" path="res://src/components/animation_component.gd" id="11_animation"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.3
@@ -51,11 +52,14 @@ script = ExtResource("6_run")
 [node name="AttackState" type="Node" parent="StateMachine"]
 script = ExtResource("7_attack")
 
+[node name="DefendState" type="Node" parent="StateMachine"]
+script = ExtResource("8_defend")
+
 [node name="MovementComponent" type="Node" parent="."]
-script = ExtResource("8_movement")
+script = ExtResource("9_movement")
 
 [node name="HealthComponent" type="Node" parent="."]
-script = ExtResource("9_health")
+script = ExtResource("10_health")
 
 [node name="AnimationComponent" type="Node" parent="."]
-script = ExtResource("10_animation")
+script = ExtResource("11_animation")

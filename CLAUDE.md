@@ -113,6 +113,7 @@ EventBus.entity_died.connect(_on_entity_died)
 - **HealthComponent** (`src/components/health_component.gd`) -- HP tracking, `take_damage()`, `heal()`. Signals: `died`, `health_changed`, `damage_taken`, `healed`. Emits `EventBus.entity_died` on death.
 - **MovementComponent** (`src/components/movement_component.gd`) -- Movement, gravity, rotation for CharacterBody3D. Finds its body via `get_parent()`. Call `apply_movement(direction, delta)`, `apply_gravity(delta)`, `apply_friction(delta)`, `move()`. Does NOT read input -- receives direction from caller.
 - **AnimationComponent** (`src/components/animation_component.gd`) -- AnimationPlayer wrapper. Auto-discovers AnimationPlayer by searching sibling nodes. Call `play(animation_name, crossfade, loop)`. Pass `loop = true` for animations that should repeat (Idle, Running); omit or pass `false` for one-shot animations (attacks). Emits `animation_finished` only for non-looping animations.
+- **UpperBodyOverride** (`src/components/upper_body_override.gd`) -- SkeletonModifier3D that overrides upper body bone poses after animation. Added as a child of Skeleton3D at runtime. Set `bone_poses` dictionary (bone_idx -> {"rotation": Quaternion, "position": Vector3}), toggle `active` to enable/disable. Used for shield blocking while walking.
 
 ## State Machine Pattern
 
@@ -154,6 +155,7 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1
     IdleState                    idle_state.gd
     RunState                     run_state.gd
     AttackState                  attack_state.gd
+    DefendState                  defend_state.gd
   MovementComponent              movement_component.gd
   HealthComponent                health_component.gd
   AnimationComponent             animation_component.gd
@@ -166,6 +168,7 @@ All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which p
 - **IdleState** -- plays `Idle`, transitions to RunState on movement input, AttackState on LMB
 - **RunState** -- plays `Running_A`, applies camera-relative movement + rotation, transitions to IdleState when stopped
 - **AttackState** -- plays `1H_Melee_Attack_Slice_Diagonal`, applies friction (no movement input), transitions out on animation_finished
+- **DefendState** -- raises shield via UpperBodyOverride (upper body holds Blocking pose), plays `Walking_A`/`Idle` as base for legs, allows movement at half speed, transitions to Idle/Run on RMB release
 
 ### Input Actions
 
@@ -176,6 +179,7 @@ All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which p
 | `move_left` | A | PlayerState.get_input_direction() |
 | `move_right` | D | PlayerState.get_input_direction() |
 | `attack` | LMB | IdleState, RunState |
+| `defend` | RMB | IdleState, RunState |
 
 ### KayKit Adventurers Asset Pack
 
@@ -290,6 +294,11 @@ Component references are wired via `$NodeName` in `_ready()`, not `@export`.
 | 12 | Trigger | Trigger zones |
 
 ## Common Patterns
+
+### Upper/Lower Body Animation Blending
+To play different animations on upper and lower body (e.g., blocking while walking), use `UpperBodyOverride` (a `SkeletonModifier3D`). The AnimationPlayer plays the base animation (legs), and the modifier overrides upper body bone poses after animation processing. Do NOT use `set_bone_pose_rotation()` in `_process()` -- the AnimationMixer overwrites it. `SkeletonModifier3D` runs at the correct point in the skeleton pipeline.
+
+Setup: cache bone poses from the overlay animation, define lower body bones to exclude, add the modifier as a child of `Skeleton3D`, toggle `active` on/off. See `player.gd:_setup_upper_body_override()` for the full pattern.
 
 ### Damage Flow
 1. HitboxComponent (attacker) overlaps HurtboxComponent (target)
