@@ -40,7 +40,7 @@ func stop_defend() -> void:
 	_upper_body_override.active = false
 
 func _on_health_component_died() -> void:
-	pass
+	state_machine.transition_to(&"DeathState")
 
 func _setup_upper_body_override() -> void:
 	var anim_player: AnimationPlayer = animation_component.animation_player

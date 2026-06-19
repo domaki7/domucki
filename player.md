@@ -13,6 +13,7 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
     RunState                     run_state.gd
     AttackState                  attack_state.gd
     DefendState                  defend_state.gd
+    DeathState                   death_state.gd
   MovementComponent              movement_component.gd
   HealthComponent                health_component.gd
   AnimationComponent             animation_component.gd
@@ -30,6 +31,7 @@ All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which p
 - **RunState** -- plays `Running_A`, applies camera-relative movement + rotation, transitions to IdleState when stopped
 - **AttackState** -- plays `1H_Melee_Attack_Slice_Diagonal`, activates hitbox on enter / deactivates on exit, applies friction (no movement input), transitions out on animation_finished
 - **DefendState** -- raises shield via UpperBodyOverride (upper body holds Blocking pose), plays `Walking_A`/`Idle` as base for legs, allows movement at half speed, transitions to Idle/Run on RMB release
+- **DeathState** -- terminal state, plays `Death_A`, deactivates hitbox, disables defend, applies gravity/friction. After animation finishes + 1s delay, reloads current level via SceneManager
 
 ## Input Actions
 
