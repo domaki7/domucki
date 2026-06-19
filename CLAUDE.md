@@ -146,7 +146,7 @@ Player scene tree (`src/entities/player/player.tscn`):
 ```
 Player (CharacterBody3D)         player.gd, layer 2, mask 1
   CollisionShape3D               CapsuleShape3D
-  KnightModel                    KayKit Knight.glb instance
+  KnightModel                    KayKit Knight.glb instance, rotated 180° Y
   CameraArm                      camera_arm.gd, third-person orbit camera
     SpringArm3D                  wall collision, length 4.0
       Camera3D
@@ -180,6 +180,8 @@ All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which p
 ### KayKit Adventurers Asset Pack
 
 CC0 licensed characters in `addons/kaykit_character_pack_adventures/`. Characters: Knight, Barbarian, Mage, Rogue, Rogue_Hooded. Each .glb has 70+ animations including Idle, Walking_A/B/C, Running_A/B, attack variants (1H/2H/Dualwield), Death_A/B, Dodge, Block, Spellcast, Jump, and more. Weapons and accessories in `Assets/gltf/`.
+
+**Model orientation:** KayKit GLB models face +Z at rest, but Godot and MovementComponent assume -Z forward. When instancing a KayKit model in an entity scene, apply a 180° Y rotation on the model node: `Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)`. Do NOT change the MovementComponent atan2 formula to compensate -- correct at the model node level.
 
 ## GDScript Style
 
