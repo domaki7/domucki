@@ -12,6 +12,7 @@ signal movement_stopped
 
 @export_group("Gravity")
 @export var gravity_multiplier: float = 1.0
+@export var jump_force: float = 6.0
 
 var body: CharacterBody3D
 var _gravity: float = 0.0
@@ -35,6 +36,9 @@ func apply_movement(direction: Vector3, delta: float) -> void:
 	body.rotation.y = lerp_angle(body.rotation.y, target_angle, rotation_speed * delta)
 
 	_check_movement_signals()
+
+func apply_jump_impulse() -> void:
+	body.velocity.y = jump_force
 
 func apply_gravity(delta: float) -> void:
 	if not body.is_on_floor():

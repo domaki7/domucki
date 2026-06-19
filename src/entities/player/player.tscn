@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb" id="2_knight"]
@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://src/entities/player/states/attack_state.gd" id="7_attack"]
 [ext_resource type="Script" path="res://src/entities/player/states/defend_state.gd" id="8_defend"]
 [ext_resource type="Script" path="res://src/entities/player/states/death_state.gd" id="14_death"]
+[ext_resource type="Script" path="res://src/entities/player/states/jump_state.gd" id="15_jump"]
+[ext_resource type="Script" path="res://src/entities/player/states/air_attack_state.gd" id="16_airattack"]
 [ext_resource type="Script" path="res://src/components/movement_component.gd" id="9_movement"]
 [ext_resource type="Script" path="res://src/components/health_component.gd" id="10_health"]
 [ext_resource type="Script" path="res://src/components/animation_component.gd" id="11_animation"]
@@ -67,6 +69,12 @@ script = ExtResource("8_defend")
 
 [node name="DeathState" type="Node" parent="StateMachine"]
 script = ExtResource("14_death")
+
+[node name="JumpState" type="Node" parent="StateMachine"]
+script = ExtResource("15_jump")
+
+[node name="AirAttackState" type="Node" parent="StateMachine"]
+script = ExtResource("16_airattack")
 
 [node name="MovementComponent" type="Node" parent="."]
 script = ExtResource("9_movement")

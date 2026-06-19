@@ -14,6 +14,8 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
     AttackState                  attack_state.gd
     DefendState                  defend_state.gd
     DeathState                   death_state.gd
+    JumpState                    jump_state.gd
+    AirAttackState               air_attack_state.gd
   MovementComponent              movement_component.gd
   HealthComponent                health_component.gd
   AnimationComponent             animation_component.gd
@@ -25,12 +27,14 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
 
 ## Player States
 
-All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which provides `player`, `movement`, `animation`, `hitbox` refs and `get_input_direction() -> Vector3` (camera-relative WASD).
+All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which provides `player`, `movement`, `animation`, `hitbox` refs, `get_input_direction() -> Vector3` (camera-relative WASD), and `_check_jump() -> bool` (transitions to JumpState if Space pressed and on floor).
 
 - **IdleState** -- plays `Idle`, transitions to RunState on movement input, AttackState on LMB
 - **RunState** -- plays `Running_A`, applies camera-relative movement + rotation, transitions to IdleState when stopped
 - **AttackState** -- plays `1H_Melee_Attack_Slice_Diagonal`, activates hitbox on enter / deactivates on exit, applies friction (no movement input), transitions out on animation_finished
 - **DefendState** -- raises shield via UpperBodyOverride (upper body holds Blocking pose), plays `Walking_A`/`Idle` as base for legs, allows movement at half speed, transitions to Idle/Run on RMB release
+- **JumpState** -- phased jump with internal START/AIR/LAND phases. START: applies jump impulse + plays `Jump_Start`. AIR: plays `Jump_Idle` (loop), full air control, checks for landing (`is_on_floor`) and air attack (LMB). LAND: plays `Jump_Land`, transitions to Idle/Run on animation finish. Supports re-entry to AIR phase via `return_to_air` flag (used by AirAttackState).
+- **AirAttackState** -- mid-air attack, plays `1H_Melee_Attack_Slice_Diagonal`, activates hitbox, applies gravity + full air control. On animation finish: if on floor transitions to Idle/Run, if airborne returns to JumpState(AIR).
 - **DeathState** -- terminal state, plays `Death_A`, deactivates hitbox, disables defend, applies gravity/friction. After animation finishes + 1s delay, reloads current level via SceneManager
 
 ## Input Actions
@@ -41,8 +45,9 @@ All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which p
 | `move_backward` | S | PlayerState.get_input_direction() |
 | `move_left` | A | PlayerState.get_input_direction() |
 | `move_right` | D | PlayerState.get_input_direction() |
-| `attack` | LMB | IdleState, RunState |
+| `attack` | LMB | IdleState, RunState, JumpState(AIR) |
 | `defend` | RMB | IdleState, RunState |
+| `jump` | Space | All grounded states (via PlayerState._check_jump) |
 
 ## KayKit Adventurers Asset Pack
 

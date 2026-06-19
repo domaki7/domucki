@@ -15,6 +15,9 @@ func physics_process_state(delta: float) -> void:
 
 	movement.move()
 
+	if _check_jump():
+		return
+
 	if not movement.is_moving() and direction.length() < 0.1:
 		transition_requested.emit(self, &"IdleState")
 		return

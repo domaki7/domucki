@@ -25,6 +25,9 @@ func physics_process_state(delta: float) -> void:
 
 	movement.move()
 
+	if _check_jump():
+		return
+
 	if not Input.is_action_pressed(&"defend"):
 		if direction.length() > 0.1:
 			transition_requested.emit(self, &"RunState")

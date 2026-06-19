@@ -13,6 +13,12 @@ func _ready() -> void:
 	animation = player.animation_component
 	hitbox = player.hitbox_component
 
+func _check_jump() -> bool:
+	if Input.is_action_just_pressed(&"jump") and movement.body.is_on_floor():
+		transition_requested.emit(self, &"JumpState")
+		return true
+	return false
+
 func get_input_direction() -> Vector3:
 	var input: Vector2 = Vector2.ZERO
 	input.x = Input.get_axis(&"move_left", &"move_right")

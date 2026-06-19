@@ -16,6 +16,9 @@ func physics_process_state(delta: float) -> void:
 	movement.apply_friction(delta)
 	movement.move()
 
+	if _check_jump():
+		return
+
 func _on_animation_finished(_anim_name: StringName) -> void:
 	var direction: Vector3 = get_input_direction()
 	if direction.length() > 0.1:

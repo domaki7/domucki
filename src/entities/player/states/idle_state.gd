@@ -8,6 +8,9 @@ func physics_process_state(delta: float) -> void:
 	movement.apply_gravity(delta)
 	movement.move()
 
+	if _check_jump():
+		return
+
 	var direction: Vector3 = get_input_direction()
 	if direction.length() > 0.1:
 		transition_requested.emit(self, &"RunState")
