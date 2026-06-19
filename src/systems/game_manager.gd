@@ -3,6 +3,7 @@ extends Node
 enum GameState { PLAYING, PAUSED, LOADING, CUTSCENE }
 
 signal game_state_changed(old_state: GameState, new_state: GameState)
+signal player_registered(player_node: CharacterBody3D)
 
 @export var starting_state: GameState = GameState.PLAYING
 
@@ -25,3 +26,4 @@ func change_state(new_state: GameState) -> void:
 
 func register_player(player_node: CharacterBody3D) -> void:
 	player = player_node
+	player_registered.emit(player_node)

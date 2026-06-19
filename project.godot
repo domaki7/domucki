@@ -22,6 +22,7 @@ EventBus="*res://src/systems/event_bus.gd"
 SaveManager="*res://src/systems/save_manager.gd"
 AudioManager="*res://src/systems/audio_manager.gd"
 SceneManager="*res://src/systems/scene_manager.gd"
+HUD="*res://src/ui/hud/hud.tscn"
 
 [display]
 

@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/ui/hud/hud.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://src/ui/components/health_bar.tscn" id="2_health_bar"]
+
+[node name="HUD" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_script")
+
+[node name="HUDRoot" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopLeft" type="MarginContainer" parent="HUDRoot"]
+layout_mode = 1
+anchors_preset = 0
+offset_right = 240.0
+offset_bottom = 50.0
+mouse_filter = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+
+[node name="HealthBar" parent="HUDRoot/TopLeft" instance=ExtResource("2_health_bar")]
+layout_mode = 2
