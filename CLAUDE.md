@@ -183,6 +183,18 @@ CC0 licensed characters in `addons/kaykit_character_pack_adventures/`. Character
 
 **Model orientation:** KayKit GLB models face +Z at rest, but Godot and MovementComponent assume -Z forward. When instancing a KayKit model in an entity scene, apply a 180° Y rotation on the model node: `Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)`. Do NOT change the MovementComponent atan2 formula to compensate -- correct at the model node level.
 
+**Built-in equipment meshes:** KayKit character GLBs have all weapon/shield/accessory variants pre-attached to bone slots and **all visible by default**. The entity script must hide unwanted variants in `_ready()`. Skeleton structure for equipment slots:
+- `handslot_l` (BoneAttachment3D on `handslot.l`) -- left hand equipment (shields, offhand weapons)
+- `handslot_r` (BoneAttachment3D on `handslot.r`) -- right hand equipment (main-hand weapons)
+- `head` (BoneAttachment3D on `head`) -- helmets
+- `chest` (BoneAttachment3D on `chest`) -- capes, armor accessories
+
+Knight model equipment meshes:
+- Left hand: `1H_Sword_Offhand`, `Badge_Shield`, `Rectangle_Shield`, `Round_Shield`, `Spike_Shield`
+- Right hand: `1H_Sword`, `2H_Sword`
+- Head: `Knight_Helmet`
+- Chest: `Knight_Cape`
+
 ## GDScript Style
 
 ```gdscript
