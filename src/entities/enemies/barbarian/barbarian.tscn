@@ -1,0 +1,86 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://src/entities/enemies/barbarian/barbarian.gd" id="1_barbarian"]
+[ext_resource type="PackedScene" uid="uid://c7ivx1314y3al" path="res://addons/kaykit_character_pack_adventures/Characters/gltf/Barbarian.glb" id="2_model"]
+[ext_resource type="Script" path="res://src/states/state_machine.gd" id="3_statemachine"]
+[ext_resource type="Script" path="res://src/entities/enemies/barbarian/states/idle_state.gd" id="4_idle"]
+[ext_resource type="Script" path="res://src/entities/enemies/barbarian/states/chase_state.gd" id="5_chase"]
+[ext_resource type="Script" path="res://src/entities/enemies/barbarian/states/attack_state.gd" id="6_attack"]
+[ext_resource type="Script" path="res://src/entities/enemies/barbarian/states/death_state.gd" id="7_death"]
+[ext_resource type="Script" path="res://src/components/movement_component.gd" id="8_movement"]
+[ext_resource type="Script" path="res://src/components/health_component.gd" id="9_health"]
+[ext_resource type="Script" path="res://src/components/animation_component.gd" id="10_animation"]
+[ext_resource type="Script" path="res://src/components/hitbox_component.gd" id="11_hitbox"]
+[ext_resource type="Script" path="res://src/components/hurtbox_component.gd" id="12_hurtbox"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.75
+height = 1.2
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
+radius = 0.6
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hurtbox"]
+radius = 0.35
+height = 1.0
+
+[node name="Barbarian" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("1_barbarian")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="BarbarianModel" parent="." instance=ExtResource("2_model")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("3_statemachine")
+
+[node name="IdleState" type="Node" parent="StateMachine"]
+script = ExtResource("4_idle")
+detection_range = 10.0
+
+[node name="ChaseState" type="Node" parent="StateMachine"]
+script = ExtResource("5_chase")
+attack_range = 2.0
+give_up_range = 15.0
+
+[node name="AttackState" type="Node" parent="StateMachine"]
+script = ExtResource("6_attack")
+
+[node name="DeathState" type="Node" parent="StateMachine"]
+script = ExtResource("7_death")
+
+[node name="MovementComponent" type="Node" parent="."]
+script = ExtResource("8_movement")
+move_speed = 3.5
+acceleration = 8.0
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("9_health")
+max_health = 75.0
+
+[node name="AnimationComponent" type="Node" parent="."]
+script = ExtResource("10_animation")
+
+[node name="HitboxComponent" type="Area3D" parent="."]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("11_hitbox")
+damage = 15.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HitboxComponent"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.8)
+shape = SubResource("SphereShape3D_hitbox")
+
+[node name="HurtboxComponent" type="Area3D" parent="."]
+collision_layer = 128
+collision_mask = 16
+script = ExtResource("12_hurtbox")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HurtboxComponent"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CapsuleShape3D_hurtbox")

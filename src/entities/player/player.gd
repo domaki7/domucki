@@ -5,6 +5,8 @@ var state_machine: StateMachine
 var movement_component: MovementComponent
 var health_component: HealthComponent
 var animation_component: AnimationComponent
+var hitbox_component: HitboxComponent
+var hurtbox_component: HurtboxComponent
 var camera_arm: PlayerCameraArm
 var _skeleton: Skeleton3D
 var _upper_body_override: UpperBodyOverride
@@ -14,6 +16,8 @@ func _ready() -> void:
 	movement_component = $MovementComponent as MovementComponent
 	health_component = $HealthComponent as HealthComponent
 	animation_component = $AnimationComponent as AnimationComponent
+	hitbox_component = $HitboxComponent as HitboxComponent
+	hurtbox_component = $HurtboxComponent as HurtboxComponent
 	camera_arm = $CameraArm as PlayerCameraArm
 	_skeleton = $KnightModel/Rig/Skeleton3D as Skeleton3D
 

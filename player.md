@@ -2,7 +2,7 @@
 
 Player scene tree (`src/entities/player/player.tscn`):
 ```
-Player (CharacterBody3D)         player.gd, layer 2, mask 1
+Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
   CollisionShape3D               CapsuleShape3D
   KnightModel                    KayKit Knight.glb instance, rotated 180° Y
   CameraArm                      camera_arm.gd, third-person orbit camera
@@ -16,15 +16,19 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1
   MovementComponent              movement_component.gd
   HealthComponent                health_component.gd
   AnimationComponent             animation_component.gd
+  HitboxComponent                hitbox_component.gd, layer 5 (PlayerHitbox), damage 25
+    CollisionShape3D             SphereShape3D r=0.6 at (0, 0.5, -0.8)
+  HurtboxComponent               hurtbox_component.gd, layer 7 (PlayerHurtbox), mask 6 (EnemyHitbox)
+    CollisionShape3D             CapsuleShape3D matching body
 ```
 
 ## Player States
 
-All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which provides `player`, `movement`, `animation` refs and `get_input_direction() -> Vector3` (camera-relative WASD).
+All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which provides `player`, `movement`, `animation`, `hitbox` refs and `get_input_direction() -> Vector3` (camera-relative WASD).
 
 - **IdleState** -- plays `Idle`, transitions to RunState on movement input, AttackState on LMB
 - **RunState** -- plays `Running_A`, applies camera-relative movement + rotation, transitions to IdleState when stopped
-- **AttackState** -- plays `1H_Melee_Attack_Slice_Diagonal`, applies friction (no movement input), transitions out on animation_finished
+- **AttackState** -- plays `1H_Melee_Attack_Slice_Diagonal`, activates hitbox on enter / deactivates on exit, applies friction (no movement input), transitions out on animation_finished
 - **DefendState** -- raises shield via UpperBodyOverride (upper body holds Blocking pose), plays `Walking_A`/`Idle` as base for legs, allows movement at half speed, transitions to Idle/Run on RMB release
 
 ## Input Actions

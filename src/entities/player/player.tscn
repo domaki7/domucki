@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb" id="2_knight"]
@@ -11,14 +11,23 @@
 [ext_resource type="Script" path="res://src/components/movement_component.gd" id="9_movement"]
 [ext_resource type="Script" path="res://src/components/health_component.gd" id="10_health"]
 [ext_resource type="Script" path="res://src/components/animation_component.gd" id="11_animation"]
+[ext_resource type="Script" path="res://src/components/hitbox_component.gd" id="12_hitbox"]
+[ext_resource type="Script" path="res://src/components/hurtbox_component.gd" id="13_hurtbox"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
-radius = 0.3
+radius = 0.75
+height = 1.2
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
+radius = 0.6
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hurtbox"]
+radius = 0.35
 height = 1.0
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
-collision_mask = 1
+collision_mask = 5
 script = ExtResource("1_player")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
@@ -63,3 +72,22 @@ script = ExtResource("10_health")
 
 [node name="AnimationComponent" type="Node" parent="."]
 script = ExtResource("11_animation")
+
+[node name="HitboxComponent" type="Area3D" parent="."]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("12_hitbox")
+damage = 25.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HitboxComponent"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.8)
+shape = SubResource("SphereShape3D_hitbox")
+
+[node name="HurtboxComponent" type="Area3D" parent="."]
+collision_layer = 64
+collision_mask = 32
+script = ExtResource("13_hurtbox")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HurtboxComponent"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CapsuleShape3D_hurtbox")

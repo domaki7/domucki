@@ -4,12 +4,14 @@ extends State
 var player: Player = null
 var movement: MovementComponent = null
 var animation: AnimationComponent = null
+var hitbox: HitboxComponent = null
 
 func _ready() -> void:
 	await owner.ready
 	player = owner as Player
 	movement = player.movement_component
 	animation = player.animation_component
+	hitbox = player.hitbox_component
 
 func get_input_direction() -> Vector3:
 	var input: Vector2 = Vector2.ZERO

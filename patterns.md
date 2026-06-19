@@ -16,11 +16,16 @@ Setup: cache bone poses from the overlay animation, define lower body bones to e
 ## Adding a New Enemy
 1. Create subfolder in `src/entities/enemies/<enemy_name>/`
 2. Create scene (.tscn) with CharacterBody3D root + CollisionShape3D
-3. Add component nodes as children (HealthComponent, MovementComponent, AnimationComponent, etc.)
+3. Add component nodes as children (HealthComponent, MovementComponent, AnimationComponent, HitboxComponent, HurtboxComponent)
 4. Wire references via `$NodeName` in the entity script's `_ready()`
-5. Create `states/` subfolder with AI states
-6. Start state machine via `call_deferred` in `_ready()`
-7. Assign loot table .tres and set collision layers
+5. Create `states/` subfolder with a base state (extends State, typed to enemy class) and concrete AI states
+6. Base enemy state provides `get_player()`, `get_distance_to_player()`, `get_direction_to_player()` helpers
+7. Start state machine via `call_deferred` in `_ready()`
+8. Set collision layers: body layer 3 (Enemy) mask 1 (World), hitbox layer 6 mask 0, hurtbox layer 8 mask 5 (PlayerHitbox)
+9. Handle death: `health_component.died` -> transition to DeathState -> disable collisions -> play death anim -> `queue_free()`
+
+### Existing Enemies
+- **Barbarian** (`src/entities/enemies/barbarian/`) -- Melee enemy using KayKit Barbarian model with 1H_Axe. States: Idle (detect player at range), Chase (run toward player), Attack (1H_Melee_Attack_Chop + hitbox), Death. 75 HP, 15 damage, move speed 3.5.
 
 ## Creating a New Item
 1. If new category needed, create Resource script in `resources/items/` extending ItemData
