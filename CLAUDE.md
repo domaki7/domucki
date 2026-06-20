@@ -13,6 +13,7 @@ Use PowerShell for any file inspection tasks (reading 3D files, binary files, et
 @player.md
 @patterns.md
 @debug.md
+@todo.md
 
 ## Directory Structure
 
