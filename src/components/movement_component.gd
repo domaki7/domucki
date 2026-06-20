@@ -9,6 +9,7 @@ signal movement_stopped
 @export var acceleration: float = 10.0
 @export var friction: float = 10.0
 @export var rotation_speed: float = 10.0
+@export var fps_mode: bool = false
 
 @export_group("Gravity")
 @export var gravity_multiplier: float = 1.0
@@ -32,8 +33,9 @@ func apply_movement(direction: Vector3, delta: float) -> void:
 	body.velocity.x = lerpf(body.velocity.x, target_velocity_x, acceleration * delta)
 	body.velocity.z = lerpf(body.velocity.z, target_velocity_z, acceleration * delta)
 
-	var target_angle: float = atan2(-direction.x, -direction.z)
-	body.rotation.y = lerp_angle(body.rotation.y, target_angle, rotation_speed * delta)
+	if not fps_mode:
+		var target_angle: float = atan2(-direction.x, -direction.z)
+		body.rotation.y = lerp_angle(body.rotation.y, target_angle, rotation_speed * delta)
 
 	_check_movement_signals()
 

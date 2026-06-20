@@ -3,6 +3,7 @@ extends PlayerState
 
 func enter() -> void:
 	animation.play(&"Idle", 0.2, true)
+	viewmodel.set_bobbing(false)
 
 func physics_process_state(delta: float) -> void:
 	movement.apply_gravity(delta)
@@ -16,9 +17,9 @@ func physics_process_state(delta: float) -> void:
 		transition_requested.emit(self, &"RunState")
 		return
 
-	if Input.is_action_just_pressed(&"attack"):
+	if _is_input_enabled() and Input.is_action_just_pressed(&"attack"):
 		transition_requested.emit(self, &"AttackState")
 		return
 
-	if Input.is_action_just_pressed(&"defend"):
+	if _is_input_enabled() and Input.is_action_just_pressed(&"defend"):
 		transition_requested.emit(self, &"DefendState")

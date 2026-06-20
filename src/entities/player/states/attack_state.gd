@@ -2,14 +2,16 @@ class_name PlayerAttackState
 extends PlayerState
 
 func enter() -> void:
-	animation.play(&"1H_Melee_Attack_Slice_Diagonal", 0.1)
-	animation.animation_finished.connect(_on_animation_finished)
-	hitbox.activate()
+	viewmodel.play_attack()
+	viewmodel.attack_hit_point.connect(_on_attack_hit_point)
+	viewmodel.attack_finished.connect(_on_attack_finished)
 
 func exit() -> void:
 	hitbox.deactivate()
-	if animation.animation_finished.is_connected(_on_animation_finished):
-		animation.animation_finished.disconnect(_on_animation_finished)
+	if viewmodel.attack_hit_point.is_connected(_on_attack_hit_point):
+		viewmodel.attack_hit_point.disconnect(_on_attack_hit_point)
+	if viewmodel.attack_finished.is_connected(_on_attack_finished):
+		viewmodel.attack_finished.disconnect(_on_attack_finished)
 
 func physics_process_state(delta: float) -> void:
 	movement.apply_gravity(delta)
@@ -19,7 +21,11 @@ func physics_process_state(delta: float) -> void:
 	if _check_jump():
 		return
 
-func _on_animation_finished(_anim_name: StringName) -> void:
+func _on_attack_hit_point() -> void:
+	hitbox.activate()
+
+func _on_attack_finished() -> void:
+	hitbox.deactivate()
 	var direction: Vector3 = get_input_direction()
 	if direction.length() > 0.1:
 		transition_requested.emit(self, &"RunState")

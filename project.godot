@@ -26,6 +26,8 @@ HUD="*res://src/ui/hud/hud.tscn"
 
 [display]
 
+window/size/viewport_width=1154
+window/size/mode=2
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 

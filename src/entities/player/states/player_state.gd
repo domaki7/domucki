@@ -5,6 +5,7 @@ var player: Player = null
 var movement: MovementComponent = null
 var animation: AnimationComponent = null
 var hitbox: HitboxComponent = null
+var viewmodel: ViewmodelComponent = null
 
 func _ready() -> void:
 	await owner.ready
@@ -12,14 +13,22 @@ func _ready() -> void:
 	movement = player.movement_component
 	animation = player.animation_component
 	hitbox = player.hitbox_component
+	viewmodel = player.viewmodel_component
+
+func _is_input_enabled() -> bool:
+	return Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 
 func _check_jump() -> bool:
+	if not _is_input_enabled():
+		return false
 	if Input.is_action_just_pressed(&"jump") and movement.body.is_on_floor():
 		transition_requested.emit(self, &"JumpState")
 		return true
 	return false
 
 func get_input_direction() -> Vector3:
+	if not _is_input_enabled():
+		return Vector3.ZERO
 	var input: Vector2 = Vector2.ZERO
 	input.x = Input.get_axis(&"move_left", &"move_right")
 	input.y = Input.get_axis(&"move_forward", &"move_backward")

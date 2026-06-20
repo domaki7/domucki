@@ -7,6 +7,7 @@ var _phase: Phase = Phase.START
 var return_to_air: bool = false
 
 func enter() -> void:
+	viewmodel.set_bobbing(false)
 	animation.animation_finished.connect(_on_animation_finished)
 	if return_to_air:
 		return_to_air = false
@@ -38,7 +39,7 @@ func physics_process_state(delta: float) -> void:
 			animation.play(&"Jump_Land", 0.1)
 			return
 
-		if Input.is_action_just_pressed(&"attack"):
+		if _is_input_enabled() and Input.is_action_just_pressed(&"attack"):
 			transition_requested.emit(self, &"AirAttackState")
 
 func _on_animation_finished(_anim_name: StringName) -> void:

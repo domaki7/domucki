@@ -1,6 +1,6 @@
 # Domucki
 
-3D third-person action RPG built in Godot 4.7 with GDScript. Uses Jolt Physics, Forward Plus rendering, D3D12.
+3D first-person action RPG built in Godot 4.7 with GDScript. Uses Jolt Physics, Forward Plus rendering, D3D12.
 
 ## Tooling
 
@@ -10,6 +10,7 @@ Use PowerShell for any file inspection tasks (reading 3D files, binary files, et
 @style.md
 @player.md
 @patterns.md
+@debug.md
 
 ## Directory Structure
 
@@ -22,7 +23,7 @@ res://
     npcs/               NPC types
   src/systems/          Autoloaded singletons (GameManager, EventBus, etc.)
   src/states/           Base state machine framework (State, StateMachine)
-  src/ui/               All UI (hud/, menus/, inventory/, dialog/)
+  src/ui/               All UI (hud/, menus/, inventory/, dialog/, debug/)
   resources/            Custom Resource scripts and .tres data files
     items/              ItemData, WeaponData, etc. + definitions/ for .tres
     stats/              CharacterStats, StatModifier resources

@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/components/viewmodel_component.gd" id="1_viewmodel"]
+
+[node name="ViewmodelComponent" type="Node3D"]
+script = ExtResource("1_viewmodel")
+
+[node name="SwordPivot" type="Node3D" parent="."]
+
+[node name="SwordMesh" type="MeshInstance3D" parent="SwordPivot"]
+
+[node name="ShieldPivot" type="Node3D" parent="."]
+
+[node name="ShieldMesh" type="MeshInstance3D" parent="ShieldPivot"]

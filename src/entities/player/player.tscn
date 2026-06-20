@@ -1,24 +1,25 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene format=3 uid="uid://dm2ecthg4pqpi"]
 
-[ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_player"]
-[ext_resource type="PackedScene" path="res://addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb" id="2_knight"]
-[ext_resource type="Script" path="res://src/entities/player/camera_arm.gd" id="3_camera"]
-[ext_resource type="Script" path="res://src/states/state_machine.gd" id="4_statemachine"]
-[ext_resource type="Script" path="res://src/entities/player/states/idle_state.gd" id="5_idle"]
-[ext_resource type="Script" path="res://src/entities/player/states/run_state.gd" id="6_run"]
-[ext_resource type="Script" path="res://src/entities/player/states/attack_state.gd" id="7_attack"]
-[ext_resource type="Script" path="res://src/entities/player/states/defend_state.gd" id="8_defend"]
-[ext_resource type="Script" path="res://src/entities/player/states/death_state.gd" id="14_death"]
-[ext_resource type="Script" path="res://src/entities/player/states/jump_state.gd" id="15_jump"]
-[ext_resource type="Script" path="res://src/entities/player/states/air_attack_state.gd" id="16_airattack"]
-[ext_resource type="Script" path="res://src/components/movement_component.gd" id="9_movement"]
-[ext_resource type="Script" path="res://src/components/health_component.gd" id="10_health"]
-[ext_resource type="Script" path="res://src/components/animation_component.gd" id="11_animation"]
-[ext_resource type="Script" path="res://src/components/hitbox_component.gd" id="12_hitbox"]
-[ext_resource type="Script" path="res://src/components/hurtbox_component.gd" id="13_hurtbox"]
+[ext_resource type="Script" uid="uid://cu4lnykjm2r2s" path="res://src/entities/player/player.gd" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://dhwvw0iok015g" path="res://addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb" id="2_knight"]
+[ext_resource type="Script" uid="uid://c7y1vm6xw6ag1" path="res://src/entities/player/first_person_camera.gd" id="3_camera"]
+[ext_resource type="Script" uid="uid://bo8jm47nxy4pe" path="res://src/states/state_machine.gd" id="4_statemachine"]
+[ext_resource type="Script" uid="uid://cf5eqcix7ir17" path="res://src/entities/player/states/idle_state.gd" id="5_idle"]
+[ext_resource type="Script" uid="uid://bw1rnypr6ktf2" path="res://src/entities/player/states/run_state.gd" id="6_run"]
+[ext_resource type="Script" uid="uid://bmsnkvbwjcuyu" path="res://src/entities/player/states/attack_state.gd" id="7_attack"]
+[ext_resource type="Script" uid="uid://uo21mpt4ndgd" path="res://src/entities/player/states/defend_state.gd" id="8_defend"]
+[ext_resource type="Script" uid="uid://cx3pe8as3q746" path="res://src/components/movement_component.gd" id="9_movement"]
+[ext_resource type="Script" uid="uid://cif2toptjj741" path="res://src/components/health_component.gd" id="10_health"]
+[ext_resource type="Script" uid="uid://cgnvm0a08xihv" path="res://src/components/animation_component.gd" id="11_animation"]
+[ext_resource type="Script" uid="uid://bfxfobxxrfin" path="res://src/components/hitbox_component.gd" id="12_hitbox"]
+[ext_resource type="Script" uid="uid://dkbt0ietcab2v" path="res://src/components/hurtbox_component.gd" id="13_hurtbox"]
+[ext_resource type="Script" uid="uid://cicgj1avkkm8q" path="res://src/entities/player/states/death_state.gd" id="14_death"]
+[ext_resource type="Script" uid="uid://dn4vtxkglosdu" path="res://src/entities/player/states/jump_state.gd" id="15_jump"]
+[ext_resource type="Script" uid="uid://b27byddd4b0gm" path="res://src/entities/player/states/air_attack_state.gd" id="16_airattack"]
+[ext_resource type="PackedScene" path="res://src/components/viewmodel_component.tscn" id="17_viewmodel"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
-radius = 0.75
+radius = 0.6
 height = 1.2
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
@@ -28,78 +29,82 @@ radius = 0.6
 radius = 0.35
 height = 1.0
 
-[node name="Player" type="CharacterBody3D"]
+[node name="Player" type="CharacterBody3D" unique_id=288344172]
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_player")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=77816571]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 shape = SubResource("CapsuleShape3D_player")
 
-[node name="KnightModel" parent="." instance=ExtResource("2_knight")]
+[node name="KnightModel" parent="." unique_id=1418133083 instance=ExtResource("2_knight")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
 
-[node name="CameraArm" type="Node3D" parent="."]
+[node name="FirstPersonCamera" type="Node3D" parent="." unique_id=119346167]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 script = ExtResource("3_camera")
 
-[node name="SpringArm3D" type="SpringArm3D" parent="CameraArm"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
-collision_mask = 1
-spring_length = 4.0
-
-[node name="Camera3D" type="Camera3D" parent="CameraArm/SpringArm3D"]
+[node name="Camera3D" type="Camera3D" parent="FirstPersonCamera" unique_id=790283347]
 current = true
-fov = 60.0
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="ViewmodelComponent" parent="FirstPersonCamera/Camera3D" unique_id=597629718 instance=ExtResource("17_viewmodel")]
+sword_idle_position = Vector3(0.6, -0.55, -0.9)
+sword_idle_rotation = Vector3(0.0, 80.5, -11.0)
+shield_idle_position = Vector3(-0.6, -0.35, -0.66)
+shield_idle_rotation = Vector3(-0.5, 180.0, 1.5)
+shield_raised_position = Vector3(-0.6, -0.35, -0.92)
+shield_raised_rotation = Vector3(0.0, 180.0, 10.0)
+
+[node name="StateMachine" type="Node" parent="." unique_id=327710097]
 script = ExtResource("4_statemachine")
 
-[node name="IdleState" type="Node" parent="StateMachine"]
+[node name="IdleState" type="Node" parent="StateMachine" unique_id=271598921]
 script = ExtResource("5_idle")
 
-[node name="RunState" type="Node" parent="StateMachine"]
+[node name="RunState" type="Node" parent="StateMachine" unique_id=524525934]
 script = ExtResource("6_run")
 
-[node name="AttackState" type="Node" parent="StateMachine"]
+[node name="AttackState" type="Node" parent="StateMachine" unique_id=2069202804]
 script = ExtResource("7_attack")
 
-[node name="DefendState" type="Node" parent="StateMachine"]
+[node name="DefendState" type="Node" parent="StateMachine" unique_id=183461696]
 script = ExtResource("8_defend")
 
-[node name="DeathState" type="Node" parent="StateMachine"]
+[node name="DeathState" type="Node" parent="StateMachine" unique_id=1563500223]
 script = ExtResource("14_death")
 
-[node name="JumpState" type="Node" parent="StateMachine"]
+[node name="JumpState" type="Node" parent="StateMachine" unique_id=1837357605]
 script = ExtResource("15_jump")
 
-[node name="AirAttackState" type="Node" parent="StateMachine"]
+[node name="AirAttackState" type="Node" parent="StateMachine" unique_id=976040413]
 script = ExtResource("16_airattack")
 
-[node name="MovementComponent" type="Node" parent="."]
+[node name="MovementComponent" type="Node" parent="." unique_id=18587041]
 script = ExtResource("9_movement")
+fps_mode = true
 
-[node name="HealthComponent" type="Node" parent="."]
+[node name="HealthComponent" type="Node" parent="." unique_id=1997812206]
 script = ExtResource("10_health")
 
-[node name="AnimationComponent" type="Node" parent="."]
+[node name="AnimationComponent" type="Node" parent="." unique_id=1553325693]
 script = ExtResource("11_animation")
 
-[node name="HitboxComponent" type="Area3D" parent="."]
+[node name="HitboxComponent" type="Area3D" parent="." unique_id=1851839684]
 collision_layer = 16
 collision_mask = 0
 script = ExtResource("12_hitbox")
 damage = 25.0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HitboxComponent"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HitboxComponent" unique_id=292274094]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.8)
 shape = SubResource("SphereShape3D_hitbox")
 
-[node name="HurtboxComponent" type="Area3D" parent="."]
+[node name="HurtboxComponent" type="Area3D" parent="." unique_id=21242370]
 collision_layer = 64
 collision_mask = 32
 script = ExtResource("13_hurtbox")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="HurtboxComponent"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HurtboxComponent" unique_id=277188496]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 shape = SubResource("CapsuleShape3D_hurtbox")

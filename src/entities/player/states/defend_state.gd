@@ -2,15 +2,10 @@ class_name PlayerDefendState
 extends PlayerState
 
 func enter() -> void:
-	player.start_defend()
-	var direction: Vector3 = get_input_direction()
-	if direction.length() > 0.1:
-		animation.play(&"Walking_A", 0.2, true)
-	else:
-		animation.play(&"Idle", 0.2, true)
+	viewmodel.raise_shield()
 
 func exit() -> void:
-	player.stop_defend()
+	viewmodel.lower_shield()
 
 func physics_process_state(delta: float) -> void:
 	movement.apply_gravity(delta)
@@ -18,10 +13,8 @@ func physics_process_state(delta: float) -> void:
 	var direction: Vector3 = get_input_direction()
 	if direction.length() > 0.1:
 		movement.apply_movement(direction * 0.5, delta)
-		animation.play(&"Walking_A", 0.2, true)
 	else:
 		movement.apply_friction(delta)
-		animation.play(&"Idle", 0.2, true)
 
 	movement.move()
 

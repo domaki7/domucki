@@ -1,9 +1,14 @@
 # Common Patterns
 
-## Upper/Lower Body Animation Blending
-To play different animations on upper and lower body (e.g., blocking while walking), use `UpperBodyOverride` (a `SkeletonModifier3D`). The AnimationPlayer plays the base animation (legs), and the modifier overrides upper body bone poses after animation processing. Do NOT use `set_bone_pose_rotation()` in `_process()` -- the AnimationMixer overwrites it. `SkeletonModifier3D` runs at the correct point in the skeleton pipeline.
+## Viewmodel Procedural Animation
+First-person weapon visuals use `ViewmodelComponent` (`src/components/viewmodel_component.gd`), parented to the Camera3D. Weapons are floating meshes (no arms/body). All motion is Tween-based with `@export` durations for tuning.
 
-Setup: cache bone poses from the overlay animation, define lower body bones to exclude, add the modifier as a child of `Skeleton3D`, toggle `active` on/off. See `player.gd:_setup_upper_body_override()` for the full pattern.
+Pattern: state calls a ViewmodelComponent method (`play_attack()`, `raise_shield()`, etc.), component creates a Tween chain, emits signals at key moments (e.g., `attack_hit_point` for hitbox activation). Every `play_*` method kills the current tween before starting a new one to handle rapid state changes.
+
+Walk bob uses a sine wave in `_process()`, toggled by `set_bobbing(active)` from RunState enter/exit.
+
+## Debug GUI Runtime Tuning
+Tabbed in-game debug panel (`src/ui/debug/`) for tweaking component `@export` vars at runtime. Alt toggles panel + mouse cursor + disables game input. Each component gets its own tab script. Values can be exported as JSON via "Copy Values to Clipboard" button. See `debug.md` for full details and how to add new tabs.
 
 ## Damage Flow
 1. HitboxComponent (attacker) overlaps HurtboxComponent (target)
