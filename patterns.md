@@ -31,7 +31,8 @@ Tabbed in-game debug panel (`src/ui/debug/`) for tweaking component `@export` va
 6. Base enemy state provides `get_player()`, `get_distance_to_player()`, `get_direction_to_player()` helpers
 7. Start state machine via `call_deferred` in `_ready()`
 8. Set collision layers: body layer 3 (Enemy) mask 1 (World), hitbox layer 6 mask 0, hurtbox layer 8 mask 5 (PlayerHitbox)
-9. Handle death: `health_component.died` -> transition to DeathState -> disable collisions -> play death anim -> `queue_free()`
+9. Add `add_to_group("enemies")` in `_ready()` so the debug GUI can discover enemies at runtime
+10. Handle death: `health_component.died` -> transition to DeathState -> disable collisions -> play death anim -> `queue_free()`
 
 ### Existing Enemies
 - **Barbarian** (`src/entities/enemies/barbarian/`) -- Melee enemy using KayKit Barbarian model with 1H_Axe. States: Idle (detect player at range), Chase (run toward player), Attack (1H_Melee_Attack_Chop + hitbox), Death. 75 HP, 15 damage, move speed 3.5.

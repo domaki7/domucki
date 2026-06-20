@@ -19,6 +19,7 @@ func _ready() -> void:
 	_skeleton = $BarbarianModel/Rig/Skeleton3D as Skeleton3D
 
 	health_component.died.connect(_on_health_component_died)
+	add_to_group("enemies")
 	_setup_equipment()
 	_start_state_machine.call_deferred()
 

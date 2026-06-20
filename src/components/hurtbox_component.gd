@@ -7,15 +7,20 @@ signal damage_blocked(hitbox: HitboxComponent)
 @export var health_component: HealthComponent
 
 var is_blocking: bool = false
+var _collision_shape: CollisionShape3D
 var _stamina_component: StaminaComponent = null
 
 func _ready() -> void:
 	monitoring = true
 	monitorable = false
+	_collision_shape = get_node("CollisionShape3D") as CollisionShape3D
 	area_entered.connect(_on_area_entered)
 	if not health_component:
 		_find_health_component()
 	_find_stamina_component()
+
+func get_collision_shape() -> CollisionShape3D:
+	return _collision_shape
 
 func _find_health_component() -> void:
 	var parent: Node = get_parent()

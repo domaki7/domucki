@@ -18,3 +18,6 @@ func activate() -> void:
 
 func deactivate() -> void:
 	_collision_shape.disabled = true
+
+func get_collision_shape() -> CollisionShape3D:
+	return _collision_shape

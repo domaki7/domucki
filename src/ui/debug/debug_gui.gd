@@ -4,6 +4,7 @@ var _panel: PanelContainer
 var _tab_container: TabContainer
 var _viewmodel_tab: Control = null
 var _stamina_tab: Control = null
+var _combat_tab: Control = null
 
 func _ready() -> void:
 	visible = false
@@ -73,3 +74,12 @@ func _bind_to_player(player_node: CharacterBody3D) -> void:
 		_tab_container.add_child(stamina_gui)
 		stamina_gui.setup(typed_player.stamina_component, typed_player.camera_arm)
 		_stamina_tab = stamina_gui as Control
+
+	if typed_player.hitbox_component or typed_player.hurtbox_component:
+		if _combat_tab:
+			_combat_tab.queue_free()
+		var combat_gui: Node = load("res://src/ui/debug/debug_combat_gui.gd").new()
+		combat_gui.name = "Combat"
+		_tab_container.add_child(combat_gui)
+		combat_gui.setup(typed_player)
+		_combat_tab = combat_gui as Control

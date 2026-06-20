@@ -12,12 +12,13 @@ Located in `src/ui/debug/`. Instanced as a child of the HUD scene (`src/ui/hud/h
 
 - **Viewmodel** (`src/ui/debug/debug_viewmodel_gui.gd`) -- tweaks ViewmodelComponent positions, rotations, durations, attack direction offsets, bob, and scale. Has per-value reset buttons (↺) that appear when modified, a "Loop Attack Animation" checkbox for visual-only attack previewing, and "Copy Values to Clipboard" that exports only changed values as JSON.
 - **Stamina** (`src/ui/debug/debug_stamina_gui.gd`) -- tweaks StaminaComponent values: max_stamina, regen_rate, regen_delay, sprint_drain_rate, jump_cost, attack_cost, block_cost. Per-value reset buttons and "Copy Values to Clipboard".
+- **Combat** (`src/ui/debug/debug_combat_gui.gd`) -- tweaks hitbox/hurtbox collision shapes for both player and all enemies. Player and enemy sections each have an "Invulnerable" checkbox that toggles `HealthComponent.is_invulnerable`. Player Hitbox: radius (SphereShape3D), position offset. Player Hurtbox: radius, height (CapsuleShape3D), position offset. Enemy sections apply changes to all enemies in the scene. Each section has a "Show Hitbox/Hurtbox" checkbox that creates semi-transparent mesh overlays (red for hitbox, blue for hurtbox) visible through walls. Overlays update in real-time when shape values change. Auto-discovers enemies via `"enemies"` group and applies current values (including invulnerability) to newly spawned enemies. Per-value reset buttons and "Copy Values to Clipboard".
 
 ## Adding a New Debug Tab
 
 1. Create `src/ui/debug/debug_<component>_gui.gd` extending Control
 2. Add a `setup(component: <ComponentType>) -> void` method that stores the reference and calls `_build_controls()`
-3. In `_ready()`, create a ScrollContainer + VBoxContainer for the tab's content
+3. In `_ready()`, create a ScrollContainer + VBoxContainer for the tab's content. **Important:** call `_scroll.set_anchors_preset(Control.PRESET_FULL_RECT)` on the ScrollContainer so it fills the tab area (plain Control parents don't respect `size_flags`).
 4. Build controls programmatically in `_build_controls()`:
    - `_add_header(group_name)` for section labels
    - `_add_float_control(property, min, max, step)` for float exports (includes per-value reset button)
