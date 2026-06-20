@@ -19,7 +19,8 @@ func _ready() -> void:
 	add_child(_panel)
 
 	var scroll: ScrollContainer = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(320, 0)
+	scroll.custom_minimum_size = Vector2(400, 0)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_panel.add_child(scroll)
 
 	_content = VBoxContainer.new()
@@ -34,7 +35,7 @@ func _ready() -> void:
 
 func _setup_anchors() -> void:
 	_panel.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
-	_panel.offset_left = -340.0
+	_panel.offset_left = -420.0
 	_panel.offset_top = 10.0
 	_panel.offset_bottom = -10.0
 	_panel.offset_right = -10.0
@@ -162,7 +163,8 @@ func _add_float_control(property: String, min_val: float, max_val: float, step_v
 	var reset_btn: Button = Button.new()
 	reset_btn.text = "↺"
 	reset_btn.custom_minimum_size = Vector2(28.0, 0.0)
-	reset_btn.visible = false
+	reset_btn.modulate.a = 0.0
+	reset_btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	reset_btn.pressed.connect(_on_float_reset.bind(property))
 	row.add_child(reset_btn)
 
@@ -205,7 +207,8 @@ func _add_vector3_control(property: String, min_val: float, max_val: float, step
 		var reset_btn: Button = Button.new()
 		reset_btn.text = "↺"
 		reset_btn.custom_minimum_size = Vector2(28.0, 0.0)
-		reset_btn.visible = false
+		reset_btn.modulate.a = 0.0
+		reset_btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		reset_btn.pressed.connect(_on_vector3_axis_reset.bind(property, i))
 		row.add_child(reset_btn)
 		reset_btns.append(reset_btn)
@@ -219,7 +222,9 @@ func _on_float_changed(value: float, property: String) -> void:
 	_viewmodel.set(property, value)
 	if _reset_buttons.has(property):
 		var btn: Button = _reset_buttons[property] as Button
-		btn.visible = not is_equal_approx(value, _defaults[property] as float)
+		var changed: bool = not is_equal_approx(value, _defaults[property] as float)
+		btn.modulate.a = 1.0 if changed else 0.0
+		btn.mouse_filter = Control.MOUSE_FILTER_STOP if changed else Control.MOUSE_FILTER_IGNORE
 
 func _on_float_reset(property: String) -> void:
 	if not _viewmodel:
@@ -229,7 +234,8 @@ func _on_float_reset(property: String) -> void:
 	var spinbox: SpinBox = _float_spinboxes[property] as SpinBox
 	spinbox.set_value_no_signal(default_value)
 	var btn: Button = _reset_buttons[property] as Button
-	btn.visible = false
+	btn.modulate.a = 0.0
+	btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _on_vector3_axis_changed(value: float, property: String, axis: int) -> void:
 	if not _viewmodel:
@@ -241,7 +247,9 @@ func _on_vector3_axis_changed(value: float, property: String, axis: int) -> void
 	if _reset_buttons.has(property):
 		var btns: Array = _reset_buttons[property] as Array
 		var default_val: Vector3 = _defaults[property] as Vector3
-		btns[axis].visible = not is_equal_approx(value, default_val[axis])
+		var changed: bool = not is_equal_approx(value, default_val[axis])
+		btns[axis].modulate.a = 1.0 if changed else 0.0
+		btns[axis].mouse_filter = Control.MOUSE_FILTER_STOP if changed else Control.MOUSE_FILTER_IGNORE
 
 func _on_vector3_axis_reset(property: String, axis: int) -> void:
 	if not _viewmodel:
@@ -256,7 +264,8 @@ func _on_vector3_axis_reset(property: String, axis: int) -> void:
 	_apply_viewmodel_positions()
 	var btns: Array = _reset_buttons[property] as Array
 	var btn: Button = btns[axis] as Button
-	btn.visible = false
+	btn.modulate.a = 0.0
+	btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _on_attack_loop_toggled(enabled: bool) -> void:
 	_is_attack_looping = enabled
