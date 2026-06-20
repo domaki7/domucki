@@ -10,7 +10,7 @@ Located in `src/ui/debug/`. Instanced as a child of the HUD scene (`src/ui/hud/h
 
 ## Current Tabs
 
-- **Viewmodel** (`src/ui/debug/debug_viewmodel_gui.gd`) -- tweaks ViewmodelComponent positions, rotations, durations, bob, and scale. Has "Copy Values to Clipboard" button that exports all values as JSON for pasting.
+- **Viewmodel** (`src/ui/debug/debug_viewmodel_gui.gd`) -- tweaks ViewmodelComponent positions, rotations, durations, attack direction offsets, bob, and scale. Has per-value reset buttons (↺) that appear when modified, a "Loop Attack Animation" checkbox for visual-only attack previewing, and "Copy Values to Clipboard" that exports only changed values as JSON.
 
 ## Adding a New Debug Tab
 
@@ -18,10 +18,11 @@ Located in `src/ui/debug/`. Instanced as a child of the HUD scene (`src/ui/hud/h
 2. Get the target component reference via `GameManager.player.<component>` (same pattern as the viewmodel tab)
 3. Build controls programmatically in `_build_controls()`:
    - `_add_header(group_name)` for section labels
-   - `_add_float_control(property, min, max, step)` for float exports
-   - `_add_vector3_control(property, min, max, step)` for Vector3 exports
-4. On value change, write directly to the component property. For position/rotation properties that need immediate visual feedback, also update the relevant node transforms
-5. Add a "Copy Values to Clipboard" button that serializes to JSON via `DisplayServer.clipboard_set()`
+   - `_add_float_control(property, min, max, step)` for float exports (includes per-value reset button)
+   - `_add_vector3_control(property, min, max, step)` for Vector3 exports (includes per-axis reset buttons)
+   - `_add_checkbox_control(label, callback)` for boolean toggles (returns CheckBox)
+4. On value change, write directly to the component property. For position/rotation properties that need immediate visual feedback, also update the relevant node transforms. Reset buttons (↺) auto-show when a value differs from its default and auto-hide when reset.
+5. Add a "Copy Values to Clipboard" button that serializes only changed values to JSON via `DisplayServer.clipboard_set()`
 6. Instance the new tab in the debug GUI system
 
 ## Input Guard
@@ -33,11 +34,11 @@ When the debug panel is visible (`Input.mouse_mode == MOUSE_MODE_VISIBLE`):
 
 ## Export Format
 
-The "Copy Values to Clipboard" button produces JSON:
+The "Copy Values to Clipboard" button produces JSON containing only properties that differ from their defaults:
 ```json
 {
   "property_name": 0.5,
   "vector3_property": { "x": 0.1, "y": -0.2, "z": 0.3 }
 }
 ```
-Paste this to Claude to apply values to the scene/script defaults.
+If no values have been changed, the output is `{}`. Paste this to Claude to apply values to the scene/script defaults.

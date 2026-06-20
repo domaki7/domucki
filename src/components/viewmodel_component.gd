@@ -23,6 +23,10 @@ signal death_finished
 @export var attack_windup_duration: float = 0.15
 @export var attack_swing_duration: float = 0.2
 @export var attack_recovery_duration: float = 0.25
+@export var attack_windup_rotation_offset: Vector3 = Vector3(40.0, 0.0, -20.0)
+@export var attack_windup_position_offset: Vector3 = Vector3(0.0, 0.7, 0.35)
+@export var attack_swing_rotation_offset: Vector3 = Vector3(0.0, -12.0, -60.0)
+@export var attack_swing_position_offset: Vector3 = Vector3(-0.1, -0.3, -0.1)
 
 @export_group("Block")
 @export var shield_raise_duration: float = 0.15
@@ -98,14 +102,31 @@ func play_attack() -> void:
 	_kill_current_tween()
 	_is_attacking = true
 
-	var windup_rot: Vector3 = sword_idle_rotation + Vector3(30.0, 0.0, -20.0)
-	var swing_rot: Vector3 = sword_idle_rotation + Vector3(-60.0, 30.0, 20.0)
-	var swing_pos: Vector3 = sword_idle_position + Vector3(-0.1, 0.1, -0.1)
+	var windup_rot: Vector3 = sword_idle_rotation + attack_windup_rotation_offset
+	var swing_rot: Vector3 = sword_idle_rotation + attack_swing_rotation_offset
+	var swing_pos: Vector3 = sword_idle_position + attack_swing_position_offset
 
 	_current_tween = create_tween()
 	_current_tween.tween_property(_sword_pivot, "rotation_degrees", windup_rot, attack_windup_duration)
-	_current_tween.parallel().tween_property(_sword_pivot, "position", sword_idle_position + Vector3(0.05, 0.1, 0.0), attack_windup_duration)
+	_current_tween.parallel().tween_property(_sword_pivot, "position", sword_idle_position + attack_windup_position_offset, attack_windup_duration)
 	_current_tween.tween_callback(attack_hit_point.emit)
+	_current_tween.tween_property(_sword_pivot, "rotation_degrees", swing_rot, attack_swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_current_tween.parallel().tween_property(_sword_pivot, "position", swing_pos, attack_swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_current_tween.tween_property(_sword_pivot, "rotation_degrees", sword_idle_rotation, attack_recovery_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_current_tween.parallel().tween_property(_sword_pivot, "position", sword_idle_position, attack_recovery_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_current_tween.tween_callback(_on_attack_tween_finished)
+
+func play_attack_visual() -> void:
+	_kill_current_tween()
+	_is_attacking = true
+
+	var windup_rot: Vector3 = sword_idle_rotation + attack_windup_rotation_offset
+	var swing_rot: Vector3 = sword_idle_rotation + attack_swing_rotation_offset
+	var swing_pos: Vector3 = sword_idle_position + attack_swing_position_offset
+
+	_current_tween = create_tween()
+	_current_tween.tween_property(_sword_pivot, "rotation_degrees", windup_rot, attack_windup_duration)
+	_current_tween.parallel().tween_property(_sword_pivot, "position", sword_idle_position + attack_windup_position_offset, attack_windup_duration)
 	_current_tween.tween_property(_sword_pivot, "rotation_degrees", swing_rot, attack_swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_current_tween.parallel().tween_property(_sword_pivot, "position", swing_pos, attack_swing_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_current_tween.tween_property(_sword_pivot, "rotation_degrees", sword_idle_rotation, attack_recovery_duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)

@@ -8,7 +8,7 @@ Pattern: state calls a ViewmodelComponent method (`play_attack()`, `raise_shield
 Walk bob uses a sine wave in `_process()`, toggled by `set_bobbing(active)` from RunState enter/exit.
 
 ## Debug GUI Runtime Tuning
-Tabbed in-game debug panel (`src/ui/debug/`) for tweaking component `@export` vars at runtime. Alt toggles panel + mouse cursor + disables game input. Each component gets its own tab script. Values can be exported as JSON via "Copy Values to Clipboard" button. See `debug.md` for full details and how to add new tabs.
+Tabbed in-game debug panel (`src/ui/debug/`) for tweaking component `@export` vars at runtime. Alt toggles panel + mouse cursor + disables game input. Each component gets its own tab script. Features: per-value reset buttons (↺) that appear when a value is modified, checkbox toggles (e.g., attack animation loop), and "Copy Values to Clipboard" that exports only changed values as JSON. See `debug.md` for full details and how to add new tabs.
 
 ## Damage Flow
 1. HitboxComponent (attacker) overlaps HurtboxComponent (target)

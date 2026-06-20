@@ -3,6 +3,12 @@ extends Control
 var _viewmodel: ViewmodelComponent = null
 var _panel: PanelContainer
 var _content: VBoxContainer
+var _defaults: Dictionary = {}
+var _float_spinboxes: Dictionary = {}
+var _vector3_spinboxes: Dictionary = {}
+var _reset_buttons: Dictionary = {}
+var _attack_loop_checkbox: CheckBox = null
+var _is_attack_looping: bool = false
 
 func _ready() -> void:
 	visible = false
@@ -48,6 +54,7 @@ func _toggle_panel() -> void:
 	else:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_stop_attack_loop()
 
 func _on_player_registered(player_node: CharacterBody3D) -> void:
 	_bind_to_player(player_node)
@@ -61,6 +68,11 @@ func _bind_to_player(player_node: CharacterBody3D) -> void:
 func _build_controls() -> void:
 	for child: Node in _content.get_children():
 		child.queue_free()
+
+	_defaults.clear()
+	_float_spinboxes.clear()
+	_vector3_spinboxes.clear()
+	_reset_buttons.clear()
 
 	_add_header("Sword Position")
 	_add_vector3_control("sword_idle_position", -2.0, 2.0, 0.01)
@@ -80,6 +92,11 @@ func _build_controls() -> void:
 	_add_float_control("attack_windup_duration", 0.01, 2.0, 0.01)
 	_add_float_control("attack_swing_duration", 0.01, 2.0, 0.01)
 	_add_float_control("attack_recovery_duration", 0.01, 2.0, 0.01)
+	_add_vector3_control("attack_windup_rotation_offset", -180.0, 180.0, 0.5)
+	_add_vector3_control("attack_windup_position_offset", -2.0, 2.0, 0.01)
+	_add_vector3_control("attack_swing_rotation_offset", -180.0, 180.0, 0.5)
+	_add_vector3_control("attack_swing_position_offset", -2.0, 2.0, 0.01)
+	_attack_loop_checkbox = _add_checkbox_control("Loop Attack Animation", _on_attack_loop_toggled)
 
 	_add_header("Block")
 	_add_float_control("shield_raise_duration", 0.01, 2.0, 0.01)
@@ -106,7 +123,22 @@ func _add_header(text: String) -> void:
 	var sep: HSeparator = HSeparator.new()
 	_content.add_child(sep)
 
+func _add_checkbox_control(label_text: String, callback: Callable) -> CheckBox:
+	var row: HBoxContainer = HBoxContainer.new()
+	_content.add_child(row)
+
+	var checkbox: CheckBox = CheckBox.new()
+	checkbox.text = label_text
+	checkbox.add_theme_font_size_override("font_size", 12)
+	checkbox.toggled.connect(callback)
+	row.add_child(checkbox)
+
+	return checkbox
+
 func _add_float_control(property: String, min_val: float, max_val: float, step_val: float) -> void:
+	var default_value: float = _viewmodel.get(property)
+	_defaults[property] = default_value
+
 	var row: HBoxContainer = HBoxContainer.new()
 	_content.add_child(row)
 
@@ -120,12 +152,26 @@ func _add_float_control(property: String, min_val: float, max_val: float, step_v
 	spinbox.min_value = min_val
 	spinbox.max_value = max_val
 	spinbox.step = step_val
-	spinbox.value = _viewmodel.get(property)
+	spinbox.value = default_value
 	spinbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	spinbox.value_changed.connect(_on_float_changed.bind(property))
 	row.add_child(spinbox)
 
+	_float_spinboxes[property] = spinbox
+
+	var reset_btn: Button = Button.new()
+	reset_btn.text = "↺"
+	reset_btn.custom_minimum_size = Vector2(28.0, 0.0)
+	reset_btn.visible = false
+	reset_btn.pressed.connect(_on_float_reset.bind(property))
+	row.add_child(reset_btn)
+
+	_reset_buttons[property] = reset_btn
+
 func _add_vector3_control(property: String, min_val: float, max_val: float, step_val: float) -> void:
+	var default_value: Vector3 = _viewmodel.get(property)
+	_defaults[property] = default_value
+
 	var label: Label = Label.new()
 	label.text = property
 	label.add_theme_font_size_override("font_size", 12)
@@ -134,9 +180,11 @@ func _add_vector3_control(property: String, min_val: float, max_val: float, step
 	var row: HBoxContainer = HBoxContainer.new()
 	_content.add_child(row)
 
-	var current: Vector3 = _viewmodel.get(property)
+	var current: Vector3 = default_value
 	var axes: Array[String] = ["x", "y", "z"]
 	var values: Array[float] = [current.x, current.y, current.z]
+	var spinboxes: Array[SpinBox] = []
+	var reset_btns: Array[Button] = []
 
 	for i: int in 3:
 		var axis_label: Label = Label.new()
@@ -152,11 +200,36 @@ func _add_vector3_control(property: String, min_val: float, max_val: float, step
 		spinbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		spinbox.value_changed.connect(_on_vector3_axis_changed.bind(property, i))
 		row.add_child(spinbox)
+		spinboxes.append(spinbox)
+
+		var reset_btn: Button = Button.new()
+		reset_btn.text = "↺"
+		reset_btn.custom_minimum_size = Vector2(28.0, 0.0)
+		reset_btn.visible = false
+		reset_btn.pressed.connect(_on_vector3_axis_reset.bind(property, i))
+		row.add_child(reset_btn)
+		reset_btns.append(reset_btn)
+
+	_vector3_spinboxes[property] = spinboxes
+	_reset_buttons[property] = reset_btns
 
 func _on_float_changed(value: float, property: String) -> void:
 	if not _viewmodel:
 		return
 	_viewmodel.set(property, value)
+	if _reset_buttons.has(property):
+		var btn: Button = _reset_buttons[property] as Button
+		btn.visible = not is_equal_approx(value, _defaults[property] as float)
+
+func _on_float_reset(property: String) -> void:
+	if not _viewmodel:
+		return
+	var default_value: float = _defaults[property] as float
+	_viewmodel.set(property, default_value)
+	var spinbox: SpinBox = _float_spinboxes[property] as SpinBox
+	spinbox.set_value_no_signal(default_value)
+	var btn: Button = _reset_buttons[property] as Button
+	btn.visible = false
 
 func _on_vector3_axis_changed(value: float, property: String, axis: int) -> void:
 	if not _viewmodel:
@@ -165,6 +238,46 @@ func _on_vector3_axis_changed(value: float, property: String, axis: int) -> void
 	current[axis] = value
 	_viewmodel.set(property, current)
 	_apply_viewmodel_positions()
+	if _reset_buttons.has(property):
+		var btns: Array = _reset_buttons[property] as Array
+		var default_val: Vector3 = _defaults[property] as Vector3
+		btns[axis].visible = not is_equal_approx(value, default_val[axis])
+
+func _on_vector3_axis_reset(property: String, axis: int) -> void:
+	if not _viewmodel:
+		return
+	var default_value: Vector3 = _defaults[property] as Vector3
+	var current: Vector3 = _viewmodel.get(property)
+	current[axis] = default_value[axis]
+	_viewmodel.set(property, current)
+	var spinboxes: Array = _vector3_spinboxes[property] as Array
+	var spinbox: SpinBox = spinboxes[axis] as SpinBox
+	spinbox.set_value_no_signal(default_value[axis])
+	_apply_viewmodel_positions()
+	var btns: Array = _reset_buttons[property] as Array
+	var btn: Button = btns[axis] as Button
+	btn.visible = false
+
+func _on_attack_loop_toggled(enabled: bool) -> void:
+	_is_attack_looping = enabled
+	if enabled and _viewmodel:
+		_play_attack_loop()
+
+func _play_attack_loop() -> void:
+	if not _is_attack_looping or not _viewmodel:
+		return
+	_viewmodel.play_attack_visual()
+	_viewmodel.attack_finished.connect(_on_attack_loop_iteration, CONNECT_ONE_SHOT)
+
+func _on_attack_loop_iteration() -> void:
+	if not _is_attack_looping:
+		return
+	get_tree().create_timer(0.3).timeout.connect(_play_attack_loop)
+
+func _stop_attack_loop() -> void:
+	_is_attack_looping = false
+	if _attack_loop_checkbox:
+		_attack_loop_checkbox.set_pressed_no_signal(false)
 
 func _apply_viewmodel_positions() -> void:
 	if not _viewmodel:
@@ -183,15 +296,25 @@ func _on_export_pressed() -> void:
 		"shield_idle_position", "shield_idle_rotation", "shield_scale",
 		"bob_frequency", "bob_amplitude",
 		"attack_windup_duration", "attack_swing_duration", "attack_recovery_duration",
+		"attack_windup_rotation_offset", "attack_windup_position_offset",
+		"attack_swing_rotation_offset", "attack_swing_position_offset",
 		"shield_raise_duration", "shield_raised_position", "shield_raised_rotation",
 		"death_drop_duration",
 	]
 	for prop: String in properties:
 		var value: Variant = _viewmodel.get(prop)
+		if not _defaults.has(prop):
+			continue
+		var default_val: Variant = _defaults[prop]
 		if value is Vector3:
 			var v: Vector3 = value as Vector3
+			var d: Vector3 = default_val as Vector3
+			if v.is_equal_approx(d):
+				continue
 			data[prop] = {"x": snapped(v.x, 0.001), "y": snapped(v.y, 0.001), "z": snapped(v.z, 0.001)}
 		elif value is float:
+			if is_equal_approx(value as float, default_val as float):
+				continue
 			data[prop] = snapped(value as float, 0.001)
 	var json: String = JSON.stringify(data, "  ")
 	DisplayServer.clipboard_set(json)

@@ -37,8 +37,9 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
 
 `ViewmodelComponent` (`src/components/viewmodel_component.gd`) manages first-person weapon display. Parented to Camera3D, moves/rotates with the camera. Extracts 1H_Sword and Round_Shield meshes from Knight.glb at runtime.
 
-**Procedural animations** (all Tween-based, all `@export` durations):
-- `play_attack()` -- windup → swing → recovery. Emits `attack_hit_point` at swing peak (for hitbox activation) and `attack_finished` when done.
+**Procedural animations** (all Tween-based, all `@export` durations and offsets):
+- `play_attack()` -- windup → swing → recovery. Swing direction controlled by 4 `@export` Vector3 offsets: `attack_windup_rotation_offset`, `attack_windup_position_offset`, `attack_swing_rotation_offset`, `attack_swing_position_offset`. Emits `attack_hit_point` at swing peak (for hitbox activation) and `attack_finished` when done.
+- `play_attack_visual()` -- same tween as `play_attack()` but skips `attack_hit_point` signal. Used by the debug GUI's attack loop for visual-only previewing.
 - `raise_shield()` / `lower_shield()` -- tweens shield to/from raised position on left side.
 - `play_death()` -- drops both weapons downward, emits `death_finished`.
 - `set_bobbing(active)` -- sine-wave bob on weapon pivots while walking.
