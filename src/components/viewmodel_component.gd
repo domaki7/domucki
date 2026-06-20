@@ -8,12 +8,14 @@ signal death_finished
 @export_group("Sword Position")
 @export var sword_idle_position: Vector3 = Vector3(0.6, -0.55, -0.9)
 @export var sword_idle_rotation: Vector3 = Vector3(0.0, 80.5, -11.0)
-@export var sword_scale: Vector3 = Vector3.ONE
+@export var sword_mesh_scale: float = 0.6
+@export var sword_pivot_scale: float = 1.0
 
 @export_group("Shield Position")
 @export var shield_idle_position: Vector3 = Vector3(-0.6, -0.35, -0.66)
 @export var shield_idle_rotation: Vector3 = Vector3(-0.5, 180.0, 1.5)
-@export var shield_scale: Vector3 = Vector3.ONE
+@export var shield_mesh_scale: float = 0.6
+@export var shield_pivot_scale: float = 1.0
 
 @export_group("Bob")
 @export var bob_frequency: float = 2.0
@@ -38,6 +40,8 @@ signal death_finished
 
 var _sword_pivot: Node3D
 var _shield_pivot: Node3D
+var _sword_mesh: MeshInstance3D
+var _shield_mesh: MeshInstance3D
 var _current_tween: Tween
 var _bob_time: float = 0.0
 var _is_bobbing: bool = false
@@ -49,8 +53,10 @@ func _ready() -> void:
 
 	_sword_pivot.position = sword_idle_position
 	_sword_pivot.rotation_degrees = sword_idle_rotation
+	_sword_pivot.scale = Vector3.ONE * sword_pivot_scale
 	_shield_pivot.position = shield_idle_position
 	_shield_pivot.rotation_degrees = shield_idle_rotation
+	_shield_pivot.scale = Vector3.ONE * shield_pivot_scale
 
 	_extract_meshes()
 
@@ -62,23 +68,23 @@ func _extract_meshes() -> void:
 	var sword_source: MeshInstance3D = skeleton.get_node("handslot_r/1H_Sword") as MeshInstance3D
 	var shield_source: MeshInstance3D = skeleton.get_node("handslot_l/Round_Shield") as MeshInstance3D
 
-	var sword_mesh: MeshInstance3D = $SwordPivot/SwordMesh as MeshInstance3D
-	var shield_mesh: MeshInstance3D = $ShieldPivot/ShieldMesh as MeshInstance3D
+	_sword_mesh = $SwordPivot/SwordMesh as MeshInstance3D
+	_shield_mesh = $ShieldPivot/ShieldMesh as MeshInstance3D
 
-	sword_mesh.mesh = sword_source.mesh
-	shield_mesh.mesh = shield_source.mesh
-	sword_mesh.scale = sword_scale
-	shield_mesh.scale = shield_scale
+	_sword_mesh.mesh = sword_source.mesh
+	_shield_mesh.mesh = shield_source.mesh
+	_sword_mesh.scale = Vector3.ONE * sword_mesh_scale
+	_shield_mesh.scale = Vector3.ONE * shield_mesh_scale
 
 	for i: int in sword_source.get_surface_override_material_count():
 		var mat: Material = sword_source.get_surface_override_material(i)
 		if mat:
-			sword_mesh.set_surface_override_material(i, mat)
+			_sword_mesh.set_surface_override_material(i, mat)
 
 	for i: int in shield_source.get_surface_override_material_count():
 		var mat: Material = shield_source.get_surface_override_material(i)
 		if mat:
-			shield_mesh.set_surface_override_material(i, mat)
+			_shield_mesh.set_surface_override_material(i, mat)
 
 	knight.queue_free()
 

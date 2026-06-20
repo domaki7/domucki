@@ -78,12 +78,14 @@ func _build_controls() -> void:
 	_add_header("Sword Position")
 	_add_vector3_control("sword_idle_position", -2.0, 2.0, 0.01)
 	_add_vector3_control("sword_idle_rotation", -180.0, 180.0, 0.5)
-	_add_vector3_control("sword_scale", 0.1, 5.0, 0.1)
+	_add_float_control("sword_mesh_scale", 0.1, 5.0, 0.1)
+	_add_float_control("sword_pivot_scale", 0.1, 5.0, 0.1)
 
 	_add_header("Shield Position")
 	_add_vector3_control("shield_idle_position", -2.0, 2.0, 0.01)
 	_add_vector3_control("shield_idle_rotation", -180.0, 180.0, 0.5)
-	_add_vector3_control("shield_scale", 0.1, 5.0, 0.1)
+	_add_float_control("shield_mesh_scale", 0.1, 5.0, 0.1)
+	_add_float_control("shield_pivot_scale", 0.1, 5.0, 0.1)
 
 	_add_header("Bob")
 	_add_float_control("bob_frequency", 0.0, 10.0, 0.1)
@@ -220,6 +222,7 @@ func _on_float_changed(value: float, property: String) -> void:
 	if not _viewmodel:
 		return
 	_viewmodel.set(property, value)
+	_apply_viewmodel_positions()
 	if _reset_buttons.has(property):
 		var btn: Button = _reset_buttons[property] as Button
 		var changed: bool = not is_equal_approx(value, _defaults[property] as float)
@@ -231,6 +234,7 @@ func _on_float_reset(property: String) -> void:
 		return
 	var default_value: float = _defaults[property] as float
 	_viewmodel.set(property, default_value)
+	_apply_viewmodel_positions()
 	var spinbox: SpinBox = _float_spinboxes[property] as SpinBox
 	spinbox.set_value_no_signal(default_value)
 	var btn: Button = _reset_buttons[property] as Button
@@ -293,16 +297,20 @@ func _apply_viewmodel_positions() -> void:
 		return
 	_viewmodel._sword_pivot.position = _viewmodel.sword_idle_position
 	_viewmodel._sword_pivot.rotation_degrees = _viewmodel.sword_idle_rotation
+	_viewmodel._sword_pivot.scale = Vector3.ONE * _viewmodel.sword_pivot_scale
+	_viewmodel._sword_mesh.scale = Vector3.ONE * _viewmodel.sword_mesh_scale
 	_viewmodel._shield_pivot.position = _viewmodel.shield_idle_position
 	_viewmodel._shield_pivot.rotation_degrees = _viewmodel.shield_idle_rotation
+	_viewmodel._shield_pivot.scale = Vector3.ONE * _viewmodel.shield_pivot_scale
+	_viewmodel._shield_mesh.scale = Vector3.ONE * _viewmodel.shield_mesh_scale
 
 func _on_export_pressed() -> void:
 	if not _viewmodel:
 		return
 	var data: Dictionary = {}
 	var properties: Array[String] = [
-		"sword_idle_position", "sword_idle_rotation", "sword_scale",
-		"shield_idle_position", "shield_idle_rotation", "shield_scale",
+		"sword_idle_position", "sword_idle_rotation", "sword_mesh_scale", "sword_pivot_scale",
+		"shield_idle_position", "shield_idle_rotation", "shield_mesh_scale", "shield_pivot_scale",
 		"bob_frequency", "bob_amplitude",
 		"attack_windup_duration", "attack_swing_duration", "attack_recovery_duration",
 		"attack_windup_rotation_offset", "attack_windup_position_offset",

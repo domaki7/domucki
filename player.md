@@ -35,7 +35,7 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
 
 ## Viewmodel System
 
-`ViewmodelComponent` (`src/components/viewmodel_component.gd`) manages first-person weapon display. Parented to Camera3D, moves/rotates with the camera. Extracts 1H_Sword and Round_Shield meshes from Knight.glb at runtime.
+`ViewmodelComponent` (`src/components/viewmodel_component.gd`) manages first-person weapon display. Parented to Camera3D, moves/rotates with the camera. Extracts 1H_Sword and Round_Shield meshes from Knight.glb at runtime. Each weapon has two uniform `@export float` scale controls: `*_mesh_scale` (scales the mesh only) and `*_pivot_scale` (scales the pivot, affecting both mesh size and animation reach).
 
 **Procedural animations** (all Tween-based, all `@export` durations and offsets):
 - `play_attack()` -- windup → swing → recovery. Swing direction controlled by 4 `@export` Vector3 offsets: `attack_windup_rotation_offset`, `attack_windup_position_offset`, `attack_swing_rotation_offset`, `attack_swing_position_offset`. Emits `attack_hit_point` at swing peak (for hitbox activation) and `attack_finished` when done.
