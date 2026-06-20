@@ -6,6 +6,8 @@
 
 Use PowerShell for any file inspection tasks (reading 3D files, binary files, etc.). Never use Python.
 
+**Never run git commands autonomously.** Do not stage, commit, push, or run any git operations without explicit user instruction for each command.
+
 @architecture.md
 @style.md
 @player.md

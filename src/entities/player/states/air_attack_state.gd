@@ -4,11 +4,13 @@ extends PlayerState
 func enter() -> void:
 	stamina.spend(stamina.attack_cost)
 	viewmodel.play_attack()
+	hitbox.play_swing_tween()
 	viewmodel.attack_hit_point.connect(_on_attack_hit_point)
 	viewmodel.attack_finished.connect(_on_attack_finished)
 
 func exit() -> void:
 	hitbox.deactivate()
+	hitbox.reset_position()
 	if viewmodel.attack_hit_point.is_connected(_on_attack_hit_point):
 		viewmodel.attack_hit_point.disconnect(_on_attack_hit_point)
 	if viewmodel.attack_finished.is_connected(_on_attack_finished):

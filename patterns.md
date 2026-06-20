@@ -10,6 +10,9 @@ Walk bob uses a sine wave in `_process()`, toggled by `set_bobbing(active)` from
 ## Debug GUI Runtime Tuning
 Tabbed in-game debug panel (`src/ui/debug/`) for tweaking component `@export` vars at runtime. Alt toggles panel + mouse cursor + disables game input. Each component gets its own tab script. Features: per-value reset buttons (↺) that appear when a value is modified, checkbox toggles (e.g., attack animation loop), and "Copy Values to Clipboard" that exports only changed values as JSON. See `debug.md` for full details and how to add new tabs.
 
+## Hitbox Swing Arc
+Attack states call `hitbox.play_swing_tween()` alongside the attack animation to sweep the hitbox CollisionShape3D through a 3-phase position arc (windup → hit → recovery) instead of leaving it static. States call `hitbox.reset_position()` in `exit()` to snap back to idle if interrupted. The arc offsets and durations are `@export` on HitboxComponent, tunable per-instance and via the Combat debug tab. Both player and enemy attack states use this pattern.
+
 ## Damage Flow
 1. HitboxComponent (attacker) overlaps HurtboxComponent (target)
 2. HurtboxComponent checks `is_blocking` flag:

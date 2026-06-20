@@ -64,6 +64,13 @@ func _build_controls() -> void:
 	_add_float_control("p_hitbox_radius", "radius", p_hitbox_sphere.radius, 0.01, 3.0, 0.01)
 	_add_vector3_control("p_hitbox_position", "position", p_hitbox_cs.position, -3.0, 3.0, 0.01)
 
+	_add_header("Player Hitbox Swing Arc")
+	_add_vector3_control("p_swing_windup_offset", "windup offset", _player.hitbox_component.swing_windup_offset, -3.0, 3.0, 0.01)
+	_add_vector3_control("p_swing_hit_offset", "hit offset", _player.hitbox_component.swing_hit_offset, -3.0, 3.0, 0.01)
+	_add_float_control("p_swing_windup_duration", "windup duration", _player.hitbox_component.swing_windup_duration, 0.01, 2.0, 0.01)
+	_add_float_control("p_swing_hit_duration", "hit duration", _player.hitbox_component.swing_hit_duration, 0.01, 2.0, 0.01)
+	_add_float_control("p_swing_recovery_duration", "recovery duration", _player.hitbox_component.swing_recovery_duration, 0.01, 2.0, 0.01)
+
 	var p_hurtbox_cs: CollisionShape3D = _player.hurtbox_component.get_collision_shape()
 	var p_hurtbox_capsule: CapsuleShape3D = p_hurtbox_cs.shape as CapsuleShape3D
 
@@ -82,6 +89,13 @@ func _build_controls() -> void:
 	_add_checkbox_control("Show Hitbox", _on_enemy_hitbox_visibility_toggled)
 	_add_float_control("e_hitbox_radius", "radius", e_hitbox.get("radius", 0.6) as float, 0.01, 3.0, 0.01)
 	_add_vector3_control("e_hitbox_position", "position", e_hitbox.get("position", Vector3(0.0, 0.5, -0.8)) as Vector3, -3.0, 3.0, 0.01)
+
+	_add_header("Enemy Hitbox Swing Arc (All)")
+	_add_vector3_control("e_swing_windup_offset", "windup offset", e_hitbox.get("swing_windup_offset", Vector3(0.0, 0.3, 0.3)) as Vector3, -3.0, 3.0, 0.01)
+	_add_vector3_control("e_swing_hit_offset", "hit offset", e_hitbox.get("swing_hit_offset", Vector3(-0.4, 0.0, -0.3)) as Vector3, -3.0, 3.0, 0.01)
+	_add_float_control("e_swing_windup_duration", "windup duration", e_hitbox.get("swing_windup_duration", 0.15) as float, 0.01, 2.0, 0.01)
+	_add_float_control("e_swing_hit_duration", "hit duration", e_hitbox.get("swing_hit_duration", 0.2) as float, 0.01, 2.0, 0.01)
+	_add_float_control("e_swing_recovery_duration", "recovery duration", e_hitbox.get("swing_recovery_duration", 0.25) as float, 0.01, 2.0, 0.01)
 
 	var e_hurtbox: Dictionary = _get_first_enemy_hurtbox_defaults()
 
@@ -105,8 +119,24 @@ func _get_first_enemy_hitbox_defaults() -> Dictionary:
 		if hitbox:
 			var cs: CollisionShape3D = hitbox.get_collision_shape()
 			if cs and cs.shape is SphereShape3D:
-				return {"radius": (cs.shape as SphereShape3D).radius, "position": cs.position}
-	return {"radius": 0.6, "position": Vector3(0.0, 0.5, -0.8)}
+				return {
+					"radius": (cs.shape as SphereShape3D).radius,
+					"position": cs.position,
+					"swing_windup_offset": hitbox.swing_windup_offset,
+					"swing_hit_offset": hitbox.swing_hit_offset,
+					"swing_windup_duration": hitbox.swing_windup_duration,
+					"swing_hit_duration": hitbox.swing_hit_duration,
+					"swing_recovery_duration": hitbox.swing_recovery_duration,
+				}
+	return {
+		"radius": 0.6,
+		"position": Vector3(0.0, 0.5, -0.8),
+		"swing_windup_offset": Vector3(0.0, 0.3, 0.3),
+		"swing_hit_offset": Vector3(-0.4, 0.0, -0.3),
+		"swing_windup_duration": 0.15,
+		"swing_hit_duration": 0.2,
+		"swing_recovery_duration": 0.25,
+	}
 
 func _get_first_enemy_hurtbox_defaults() -> Dictionary:
 	for enemy: Node in get_tree().get_nodes_in_group("enemies"):
@@ -239,6 +269,27 @@ func _apply_float_value(key: String, value: float) -> void:
 				if hurtbox:
 					(hurtbox.get_collision_shape().shape as CapsuleShape3D).radius = value
 					_update_overlay(hurtbox.get_collision_shape())
+		"p_swing_windup_duration":
+			_player.hitbox_component.swing_windup_duration = value
+		"p_swing_hit_duration":
+			_player.hitbox_component.swing_hit_duration = value
+		"p_swing_recovery_duration":
+			_player.hitbox_component.swing_recovery_duration = value
+		"e_swing_windup_duration":
+			for enemy: Node in _get_enemies():
+				var hitbox: HitboxComponent = enemy.get_node_or_null("HitboxComponent") as HitboxComponent
+				if hitbox:
+					hitbox.swing_windup_duration = value
+		"e_swing_hit_duration":
+			for enemy: Node in _get_enemies():
+				var hitbox: HitboxComponent = enemy.get_node_or_null("HitboxComponent") as HitboxComponent
+				if hitbox:
+					hitbox.swing_hit_duration = value
+		"e_swing_recovery_duration":
+			for enemy: Node in _get_enemies():
+				var hitbox: HitboxComponent = enemy.get_node_or_null("HitboxComponent") as HitboxComponent
+				if hitbox:
+					hitbox.swing_recovery_duration = value
 		"e_hurtbox_height":
 			for enemy: Node in _get_enemies():
 				var hurtbox: HurtboxComponent = enemy.get_node_or_null("HurtboxComponent") as HurtboxComponent
@@ -253,6 +304,11 @@ func _apply_vector3_axis(key: String, axis: int, value: float) -> void:
 			var pos: Vector3 = cs.position
 			pos[axis] = value
 			cs.position = pos
+			_player.hitbox_component.update_idle_position(pos)
+		"p_swing_windup_offset":
+			_player.hitbox_component.swing_windup_offset[axis] = value
+		"p_swing_hit_offset":
+			_player.hitbox_component.swing_hit_offset[axis] = value
 		"p_hurtbox_position":
 			var cs: CollisionShape3D = _player.hurtbox_component.get_collision_shape()
 			var pos: Vector3 = cs.position
@@ -266,6 +322,17 @@ func _apply_vector3_axis(key: String, axis: int, value: float) -> void:
 					var pos: Vector3 = cs.position
 					pos[axis] = value
 					cs.position = pos
+					hitbox.update_idle_position(pos)
+		"e_swing_windup_offset":
+			for enemy: Node in _get_enemies():
+				var hitbox: HitboxComponent = enemy.get_node_or_null("HitboxComponent") as HitboxComponent
+				if hitbox:
+					hitbox.swing_windup_offset[axis] = value
+		"e_swing_hit_offset":
+			for enemy: Node in _get_enemies():
+				var hitbox: HitboxComponent = enemy.get_node_or_null("HitboxComponent") as HitboxComponent
+				if hitbox:
+					hitbox.swing_hit_offset[axis] = value
 		"e_hurtbox_position":
 			for enemy: Node in _get_enemies():
 				var hurtbox: HurtboxComponent = enemy.get_node_or_null("HurtboxComponent") as HurtboxComponent
@@ -344,12 +411,29 @@ func _apply_current_enemy_values() -> void:
 			var cs: CollisionShape3D = hitbox.get_collision_shape()
 			if cs and cs.shape is SphereShape3D:
 				(cs.shape as SphereShape3D).radius = (_float_spinboxes["e_hitbox_radius"] as SpinBox).value
-				var spinboxes: Array = _vector3_spinboxes["e_hitbox_position"] as Array
-				cs.position = Vector3(
-					(spinboxes[0] as SpinBox).value,
-					(spinboxes[1] as SpinBox).value,
-					(spinboxes[2] as SpinBox).value
+				var pos_spinboxes: Array = _vector3_spinboxes["e_hitbox_position"] as Array
+				var pos: Vector3 = Vector3(
+					(pos_spinboxes[0] as SpinBox).value,
+					(pos_spinboxes[1] as SpinBox).value,
+					(pos_spinboxes[2] as SpinBox).value
 				)
+				cs.position = pos
+				hitbox.update_idle_position(pos)
+			hitbox.swing_windup_duration = (_float_spinboxes["e_swing_windup_duration"] as SpinBox).value
+			hitbox.swing_hit_duration = (_float_spinboxes["e_swing_hit_duration"] as SpinBox).value
+			hitbox.swing_recovery_duration = (_float_spinboxes["e_swing_recovery_duration"] as SpinBox).value
+			var windup_spinboxes: Array = _vector3_spinboxes["e_swing_windup_offset"] as Array
+			hitbox.swing_windup_offset = Vector3(
+				(windup_spinboxes[0] as SpinBox).value,
+				(windup_spinboxes[1] as SpinBox).value,
+				(windup_spinboxes[2] as SpinBox).value
+			)
+			var hit_spinboxes: Array = _vector3_spinboxes["e_swing_hit_offset"] as Array
+			hitbox.swing_hit_offset = Vector3(
+				(hit_spinboxes[0] as SpinBox).value,
+				(hit_spinboxes[1] as SpinBox).value,
+				(hit_spinboxes[2] as SpinBox).value
+			)
 			if _show_enemy_hitbox:
 				_add_sphere_overlay(cs, HITBOX_COLOR)
 		var hurtbox: HurtboxComponent = enemy.get_node_or_null("HurtboxComponent") as HurtboxComponent
