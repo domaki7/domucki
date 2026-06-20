@@ -49,6 +49,10 @@ func apply_gravity(delta: float) -> void:
 func apply_friction(delta: float) -> void:
 	body.velocity.x = lerpf(body.velocity.x, 0.0, friction * delta)
 	body.velocity.z = lerpf(body.velocity.z, 0.0, friction * delta)
+	if absf(body.velocity.x) < 0.1:
+		body.velocity.x = 0.0
+	if absf(body.velocity.z) < 0.1:
+		body.velocity.z = 0.0
 	_check_movement_signals()
 
 func move() -> void:
