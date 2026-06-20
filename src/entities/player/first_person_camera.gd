@@ -6,11 +6,20 @@ extends Node3D
 @export var min_pitch: float = -80.0
 @export var max_pitch: float = 80.0
 
+@export_group("Sprint FOV")
+@export var sprint_fov_increase: float = 10.0
+@export var fov_tween_duration: float = 0.25
+
 var _yaw: float = 0.0
 var _pitch: float = 0.0
+var _camera: Camera3D = null
+var _base_fov: float = 75.0
+var _fov_tween: Tween = null
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	_camera = $Camera3D as Camera3D
+	_base_fov = _camera.fov
 
 func _unhandled_input(event: InputEvent) -> void:
 	if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
@@ -26,3 +35,10 @@ func _physics_process(_delta: float) -> void:
 	if body:
 		body.rotation.y = _yaw
 	rotation.x = _pitch
+
+func set_sprint_fov(active: bool) -> void:
+	if _fov_tween and _fov_tween.is_running():
+		_fov_tween.kill()
+	var target_fov: float = _base_fov + sprint_fov_increase if active else _base_fov
+	_fov_tween = create_tween()
+	_fov_tween.tween_property(_camera, "fov", target_fov, fov_tween_duration)

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://src/ui/hud/hud.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://src/ui/components/health_bar.tscn" id="2_health_bar"]
-[ext_resource type="PackedScene" path="res://src/ui/debug/debug_viewmodel_gui.tscn" id="3_debug_viewmodel"]
+[ext_resource type="PackedScene" path="res://src/ui/debug/debug_gui.tscn" id="3_debug"]
 
 [node name="HUD" type="CanvasLayer"]
 layer = 10
@@ -21,13 +21,24 @@ mouse_filter = 2
 layout_mode = 1
 anchors_preset = 0
 offset_right = 240.0
-offset_bottom = 50.0
+offset_bottom = 90.0
 mouse_filter = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 16
 
-[node name="HealthBar" parent="HUDRoot/TopLeft" instance=ExtResource("2_health_bar")]
+[node name="VBoxContainer" type="VBoxContainer" parent="HUDRoot/TopLeft"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="HealthBar" parent="HUDRoot/TopLeft/VBoxContainer" instance=ExtResource("2_health_bar")]
 layout_mode = 2
 
-[node name="DebugViewmodelGui" parent="HUDRoot" instance=ExtResource("3_debug_viewmodel")]
+[node name="StaminaBar" parent="HUDRoot/TopLeft/VBoxContainer" instance=ExtResource("2_health_bar")]
+layout_mode = 2
+bar_fill_color = Color(0.2, 0.7, 0.3, 1)
+bar_min_size = Vector2(200, 14)
+show_label = false
+
+[node name="DebugGui" parent="HUDRoot" instance=ExtResource("3_debug")]
 layout_mode = 1

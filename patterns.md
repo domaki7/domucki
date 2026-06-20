@@ -12,11 +12,15 @@ Tabbed in-game debug panel (`src/ui/debug/`) for tweaking component `@export` va
 
 ## Damage Flow
 1. HitboxComponent (attacker) overlaps HurtboxComponent (target)
-2. HurtboxComponent emits `hurt(hitbox)` signal
-3. Entity or HurtboxComponent calls `health_component.take_damage(hitbox.damage)`
-4. HealthComponent emits `health_changed` and `damage_taken`
-5. If health <= 0, HealthComponent emits `died`
-6. Entity handles death (play animation, drop loot, queue_free)
+2. HurtboxComponent checks `is_blocking` flag:
+   - If blocking and stamina available: spends `stamina.block_cost`, emits `damage_blocked(hitbox)`, no damage dealt
+   - If blocking but no stamina: block fails, damage goes through normally
+   - If not blocking: proceeds to step 3
+3. HurtboxComponent emits `hurt(hitbox)` signal
+4. HurtboxComponent calls `health_component.take_damage(hitbox.damage)`
+5. HealthComponent emits `health_changed` and `damage_taken`
+6. If health <= 0, HealthComponent emits `died`
+7. Entity handles death (play animation, drop loot, queue_free)
 
 ## Adding a New Enemy
 1. Create subfolder in `src/entities/enemies/<enemy_name>/`

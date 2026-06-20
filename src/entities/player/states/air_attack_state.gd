@@ -2,6 +2,7 @@ class_name PlayerAirAttackState
 extends PlayerState
 
 func enter() -> void:
+	stamina.spend(stamina.attack_cost)
 	viewmodel.play_attack()
 	viewmodel.attack_hit_point.connect(_on_attack_hit_point)
 	viewmodel.attack_finished.connect(_on_attack_finished)

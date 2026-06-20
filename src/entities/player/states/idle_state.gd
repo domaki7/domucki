@@ -14,7 +14,10 @@ func physics_process_state(delta: float) -> void:
 
 	var direction: Vector3 = get_input_direction()
 	if direction.length() > 0.1:
-		transition_requested.emit(self, &"RunState")
+		if _is_input_enabled() and Input.is_action_pressed(&"sprint") and stamina.current_stamina > 0.0:
+			transition_requested.emit(self, &"SprintState")
+		else:
+			transition_requested.emit(self, &"RunState")
 		return
 
 	if _is_input_enabled() and Input.is_action_just_pressed(&"attack"):

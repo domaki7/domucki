@@ -1,7 +1,7 @@
 extends Control
 
 var _viewmodel: ViewmodelComponent = null
-var _panel: PanelContainer
+var _scroll: ScrollContainer
 var _content: VBoxContainer
 var _defaults: Dictionary = {}
 var _float_spinboxes: Dictionary = {}
@@ -11,60 +11,22 @@ var _attack_loop_checkbox: CheckBox = null
 var _is_attack_looping: bool = false
 
 func _ready() -> void:
-	visible = false
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	_panel = PanelContainer.new()
-	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(_panel)
-
-	var scroll: ScrollContainer = ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(400, 0)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_panel.add_child(scroll)
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	add_child(_scroll)
 
 	_content = VBoxContainer.new()
 	_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(_content)
+	_scroll.add_child(_content)
 
-	_setup_anchors()
+func setup(viewmodel: ViewmodelComponent) -> void:
+	_viewmodel = viewmodel
+	_build_controls()
 
-	GameManager.player_registered.connect(_on_player_registered)
-	if GameManager.player:
-		_bind_to_player(GameManager.player)
-
-func _setup_anchors() -> void:
-	_panel.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
-	_panel.offset_left = -420.0
-	_panel.offset_top = 10.0
-	_panel.offset_bottom = -10.0
-	_panel.offset_right = -10.0
-
-func _input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		var key_event: InputEventKey = event as InputEventKey
-		if key_event.keycode == KEY_ALT and key_event.pressed and not key_event.echo:
-			_toggle_panel()
-			get_viewport().set_input_as_handled()
-
-func _toggle_panel() -> void:
-	visible = not visible
-	if visible:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		mouse_filter = Control.MOUSE_FILTER_STOP
-	else:
-		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_stop_attack_loop()
-
-func _on_player_registered(player_node: CharacterBody3D) -> void:
-	_bind_to_player(player_node)
-
-func _bind_to_player(player_node: CharacterBody3D) -> void:
-	var typed_player: Player = player_node as Player
-	if typed_player and typed_player.viewmodel_component:
-		_viewmodel = typed_player.viewmodel_component
-		_build_controls()
+func on_panel_hidden() -> void:
+	_stop_attack_loop()
 
 func _build_controls() -> void:
 	for child: Node in _content.get_children():

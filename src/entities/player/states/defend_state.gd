@@ -3,9 +3,11 @@ extends PlayerState
 
 func enter() -> void:
 	viewmodel.raise_shield()
+	hurtbox.is_blocking = true
 
 func exit() -> void:
 	viewmodel.lower_shield()
+	hurtbox.is_blocking = false
 
 func physics_process_state(delta: float) -> void:
 	movement.apply_gravity(delta)

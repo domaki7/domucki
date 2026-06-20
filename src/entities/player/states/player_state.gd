@@ -4,7 +4,9 @@ extends State
 var player: Player = null
 var movement: MovementComponent = null
 var animation: AnimationComponent = null
+var stamina: StaminaComponent = null
 var hitbox: HitboxComponent = null
+var hurtbox: HurtboxComponent = null
 var viewmodel: ViewmodelComponent = null
 
 func _ready() -> void:
@@ -12,7 +14,9 @@ func _ready() -> void:
 	player = owner as Player
 	movement = player.movement_component
 	animation = player.animation_component
+	stamina = player.stamina_component
 	hitbox = player.hitbox_component
+	hurtbox = player.hurtbox_component
 	viewmodel = player.viewmodel_component
 
 func _is_input_enabled() -> bool:

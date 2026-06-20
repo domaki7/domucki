@@ -14,6 +14,7 @@ func enter() -> void:
 		_phase = Phase.AIR
 		animation.play(&"Jump_Idle", 0.1, true)
 	else:
+		stamina.spend(stamina.jump_cost)
 		_phase = Phase.START
 		movement.apply_jump_impulse()
 		animation.play(&"Jump_Start", 0.1)
@@ -50,6 +51,9 @@ func _on_animation_finished(_anim_name: StringName) -> void:
 		Phase.LAND:
 			var direction: Vector3 = get_input_direction()
 			if direction.length() > 0.1:
-				transition_requested.emit(self, &"RunState")
+				if _is_input_enabled() and Input.is_action_pressed(&"sprint") and stamina.current_stamina > 0.0:
+					transition_requested.emit(self, &"SprintState")
+				else:
+					transition_requested.emit(self, &"RunState")
 			else:
 				transition_requested.emit(self, &"IdleState")

@@ -4,6 +4,7 @@ extends CharacterBody3D
 var state_machine: StateMachine
 var movement_component: MovementComponent
 var health_component: HealthComponent
+var stamina_component: StaminaComponent
 var animation_component: AnimationComponent
 var hitbox_component: HitboxComponent
 var hurtbox_component: HurtboxComponent
@@ -14,6 +15,7 @@ func _ready() -> void:
 	state_machine = $StateMachine as StateMachine
 	movement_component = $MovementComponent as MovementComponent
 	health_component = $HealthComponent as HealthComponent
+	stamina_component = $StaminaComponent as StaminaComponent
 	animation_component = $AnimationComponent as AnimationComponent
 	hitbox_component = $HitboxComponent as HitboxComponent
 	hurtbox_component = $HurtboxComponent as HurtboxComponent

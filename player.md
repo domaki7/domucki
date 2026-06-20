@@ -20,8 +20,10 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
     DeathState                   death_state.gd
     JumpState                    jump_state.gd
     AirAttackState               air_attack_state.gd
+    SprintState                  sprint_state.gd
   MovementComponent              movement_component.gd, fps_mode=true
   HealthComponent                health_component.gd
+  StaminaComponent               stamina_component.gd
   AnimationComponent             animation_component.gd (plays on hidden model)
   HitboxComponent                hitbox_component.gd, layer 5 (PlayerHitbox), damage 25
     CollisionShape3D             SphereShape3D r=0.6 at (0, 0.5, -0.8)
@@ -31,7 +33,7 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
 
 ## First-Person Camera
 
-`FirstPersonCamera` (`src/entities/player/first_person_camera.gd`) handles mouse look. Yaw rotates the Player CharacterBody3D (`owner.rotation.y`), pitch rotates the camera node (`self.rotation.x`). Camera is parented to Player (not `top_level`), so it moves with the body. Pitch clamped to -80°/+80°.
+`FirstPersonCamera` (`src/entities/player/first_person_camera.gd`) handles mouse look. Yaw rotates the Player CharacterBody3D (`owner.rotation.y`), pitch rotates the camera node (`self.rotation.x`). Camera is parented to Player (not `top_level`), so it moves with the body. Pitch clamped to -80°/+80°. Also manages sprint FOV: `set_sprint_fov(active)` tweens the Camera3D FOV between base (75) and sprint (85) over `fov_tween_duration` (0.25s). `@export sprint_fov_increase` and `fov_tween_duration` are tunable in the debug GUI's Stamina tab.
 
 ## Viewmodel System
 
@@ -46,14 +48,15 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
 
 ## Player States
 
-All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which provides `player`, `movement`, `animation`, `hitbox`, `viewmodel` refs, `get_input_direction() -> Vector3` (camera-relative WASD), `_check_jump() -> bool` (transitions to JumpState if Space pressed and on floor), and `_is_input_enabled() -> bool` (returns false when mouse is visible, e.g. debug GUI open). All input checks in states are guarded by `_is_input_enabled()`.
+All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which provides `player`, `movement`, `animation`, `stamina`, `hitbox`, `hurtbox`, `viewmodel` refs, `get_input_direction() -> Vector3` (camera-relative WASD), `_check_jump() -> bool` (transitions to JumpState if Space pressed and on floor), and `_is_input_enabled() -> bool` (returns false when mouse is visible, e.g. debug GUI open). All input checks in states are guarded by `_is_input_enabled()`.
 
-- **IdleState** -- plays `Idle` (hidden model), disables viewmodel bob, transitions to RunState on movement input, AttackState on LMB
-- **RunState** -- plays `Running_A` (hidden model), enables viewmodel bob, applies camera-relative movement, transitions to IdleState when stopped
-- **AttackState** -- calls `viewmodel.play_attack()`, activates hitbox on `attack_hit_point` signal, deactivates on `attack_finished`, transitions to Idle/Run
-- **DefendState** -- calls `viewmodel.raise_shield()` on enter, `lower_shield()` on exit, allows half-speed movement, transitions to Idle/Run on RMB release
-- **JumpState** -- phased jump with internal START/AIR/LAND phases. Uses hidden model's animation timing for phase transitions. Disables viewmodel bob. Supports re-entry to AIR phase via `return_to_air` flag (used by AirAttackState).
-- **AirAttackState** -- mid-air attack via `viewmodel.play_attack()`, hitbox activated on `attack_hit_point`, gravity + full air control. On `attack_finished`: if on floor transitions to Idle/Run, if airborne returns to JumpState(AIR).
+- **IdleState** -- plays `Idle` (hidden model), disables viewmodel bob, transitions to RunState on movement input (or SprintState if SHIFT held + has stamina), AttackState on LMB
+- **RunState** -- plays `Running_A` (hidden model), enables viewmodel bob, applies camera-relative movement, transitions to SprintState on SHIFT (if has stamina), IdleState when stopped
+- **SprintState** -- plays `Running_B` (hidden model), enables viewmodel bob, applies 1.8x speed via `direction * 1.8`. Sets `stamina.is_sprinting = true` for continuous drain. Tweens FOV to 85 on enter, back to 75 on exit via `camera_arm.set_sprint_fov()`. Drops to RunState on stamina depletion or SHIFT release. Attack/defend cancel sprint directly.
+- **AttackState** -- spends `stamina.attack_cost` on enter. Calls `viewmodel.play_attack()`, activates hitbox on `attack_hit_point` signal, deactivates on `attack_finished`, transitions to Idle/Run
+- **DefendState** -- calls `viewmodel.raise_shield()` on enter, `lower_shield()` on exit. Sets `hurtbox.is_blocking = true` on enter, `false` on exit. Blocked hits negate damage but cost `stamina.block_cost`. Allows half-speed movement, transitions to Idle/Run on RMB release.
+- **JumpState** -- spends `stamina.jump_cost` on enter (not on air re-entry). Phased jump with internal START/AIR/LAND phases. Uses hidden model's animation timing for phase transitions. Disables viewmodel bob. Supports re-entry to AIR phase via `return_to_air` flag (used by AirAttackState). Landing transitions to SprintState if SHIFT held + has stamina.
+- **AirAttackState** -- spends `stamina.attack_cost` on enter. Mid-air attack via `viewmodel.play_attack()`, hitbox activated on `attack_hit_point`, gravity + full air control. On `attack_finished`: if on floor transitions to Idle/Run, if airborne returns to JumpState(AIR).
 - **DeathState** -- terminal state, calls `viewmodel.play_death()`, deactivates hitbox. After `death_finished` + 1s delay, reloads current level via SceneManager
 
 ## Input Actions
@@ -64,10 +67,11 @@ All extend `PlayerState` (`src/entities/player/states/player_state.gd`), which p
 | `move_backward` | S | PlayerState.get_input_direction() |
 | `move_left` | A | PlayerState.get_input_direction() |
 | `move_right` | D | PlayerState.get_input_direction() |
-| `attack` | LMB | IdleState, RunState, JumpState(AIR) |
-| `defend` | RMB | IdleState, RunState |
+| `attack` | LMB | IdleState, RunState, SprintState, JumpState(AIR) |
+| `defend` | RMB | IdleState, RunState, SprintState |
 | `jump` | Space | All grounded states (via PlayerState._check_jump) |
-| (Alt key) | Alt | Debug GUI toggle (debug_viewmodel_gui.gd) |
+| `sprint` | Shift | IdleState, RunState (transitions to SprintState) |
+| (Alt key) | Alt | Debug GUI toggle (debug_gui.gd) |
 
 ## KayKit Adventurers Asset Pack
 

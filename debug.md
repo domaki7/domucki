@@ -4,32 +4,34 @@ In-game debug panel for tweaking `@export` variables at runtime. Press **Alt** t
 
 ## Architecture
 
-The debug GUI is a **tabbed generic system**. Each tab targets a different component and auto-discovers its `@export` vars to build controls (SpinBox for floats, 3x SpinBox row for Vector3). New tabs are added as the game grows -- one tab per component that needs runtime tuning.
+The debug GUI is a **tabbed system** managed by `debug_gui.gd`. The master controller handles Alt key toggle, mouse cursor, and a TabContainer. Each tab is a separate script extending Control that receives its target component via `setup()` and builds controls programmatically.
 
 Located in `src/ui/debug/`. Instanced as a child of the HUD scene (`src/ui/hud/hud.tscn`).
 
 ## Current Tabs
 
 - **Viewmodel** (`src/ui/debug/debug_viewmodel_gui.gd`) -- tweaks ViewmodelComponent positions, rotations, durations, attack direction offsets, bob, and scale. Has per-value reset buttons (↺) that appear when modified, a "Loop Attack Animation" checkbox for visual-only attack previewing, and "Copy Values to Clipboard" that exports only changed values as JSON.
+- **Stamina** (`src/ui/debug/debug_stamina_gui.gd`) -- tweaks StaminaComponent values: max_stamina, regen_rate, regen_delay, sprint_drain_rate, jump_cost, attack_cost, block_cost. Per-value reset buttons and "Copy Values to Clipboard".
 
 ## Adding a New Debug Tab
 
 1. Create `src/ui/debug/debug_<component>_gui.gd` extending Control
-2. Get the target component reference via `GameManager.player.<component>` (same pattern as the viewmodel tab)
-3. Build controls programmatically in `_build_controls()`:
+2. Add a `setup(component: <ComponentType>) -> void` method that stores the reference and calls `_build_controls()`
+3. In `_ready()`, create a ScrollContainer + VBoxContainer for the tab's content
+4. Build controls programmatically in `_build_controls()`:
    - `_add_header(group_name)` for section labels
    - `_add_float_control(property, min, max, step)` for float exports (includes per-value reset button)
    - `_add_vector3_control(property, min, max, step)` for Vector3 exports (includes per-axis reset buttons)
    - `_add_checkbox_control(label, callback)` for boolean toggles (returns CheckBox)
-4. On value change, write directly to the component property. For position/rotation properties that need immediate visual feedback, also update the relevant node transforms. Reset buttons (↺) auto-show when a value differs from its default and auto-hide when reset.
-5. Add a "Copy Values to Clipboard" button that serializes only changed values to JSON via `DisplayServer.clipboard_set()`
-6. Instance the new tab in the debug GUI system
+5. On value change, write directly to the component property. For position/rotation properties that need immediate visual feedback, also update the relevant node transforms. Reset buttons (↺) auto-show when a value differs from its default and auto-hide when reset.
+6. Add a "Copy Values to Clipboard" button that serializes only changed values to JSON via `DisplayServer.clipboard_set()`
+7. Register the tab in `debug_gui.gd`'s `_bind_to_player()` method: instantiate the script, set `name` (used as tab label), add to TabContainer, call `setup()`
 
 ## Input Guard
 
 When the debug panel is visible (`Input.mouse_mode == MOUSE_MODE_VISIBLE`):
 - `FirstPersonCamera._unhandled_input()` skips mouse look processing
-- `PlayerState._is_input_enabled()` returns `false`, blocking all movement, attack, defend, and jump input
+- `PlayerState._is_input_enabled()` returns `false`, blocking all movement, attack, defend, jump, and sprint input
 - All states guard their `Input.is_action_just_pressed()` calls with `_is_input_enabled()`
 
 ## Export Format
