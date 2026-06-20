@@ -26,7 +26,7 @@ Player (CharacterBody3D)         player.gd, layer 2, mask 1+3
   StaminaComponent               stamina_component.gd
   AnimationComponent             animation_component.gd (plays on hidden model)
   HitboxComponent                hitbox_component.gd, layer 5 (PlayerHitbox), damage 25
-    CollisionShape3D             SphereShape3D r=0.6 at (0, 0.5, -0.8)
+    CollisionShape3D             SphereShape3D r=0.6 at (1, 1, -1.5)
   HurtboxComponent               hurtbox_component.gd, layer 7 (PlayerHurtbox), mask 6 (EnemyHitbox)
     CollisionShape3D             CapsuleShape3D matching body
 ```

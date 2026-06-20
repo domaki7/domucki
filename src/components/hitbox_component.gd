@@ -6,8 +6,8 @@ signal hit(hurtbox: Area3D)
 @export var damage: float = 10.0
 
 @export_group("Swing Arc")
-@export var swing_windup_offset: Vector3 = Vector3(0.0, 0.3, 0.3)
-@export var swing_hit_offset: Vector3 = Vector3(-0.4, 0.0, -0.3)
+@export var swing_windup_offset: Vector3 = Vector3(0.0, 0.7, 0.35)
+@export var swing_hit_offset: Vector3 = Vector3(-0.1, -0.3, -0.1)
 @export var swing_windup_duration: float = 0.15
 @export var swing_hit_duration: float = 0.2
 @export var swing_recovery_duration: float = 0.25
